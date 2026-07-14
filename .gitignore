@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+*.log
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+oracle/dist/
+oracle/prisma/dev.db*
+oracle/*.db
+web/.next/
+web/out/
+.DS_Store
