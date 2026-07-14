@@ -16,7 +16,7 @@ export const config = {
   // service
   port: Number(process.env.PORT ?? 4000),
   adminSecret: process.env.ADMIN_SECRET ?? "",
-  databaseUrl: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
+  databaseUrl: process.env.DATABASE_URL ?? "file:./dev.db",
 
   // flight data
   provider: (process.env.FLIGHT_PROVIDER ?? "mock") as "mock" | "aeroapi",

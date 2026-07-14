@@ -13,7 +13,7 @@ const ORACLE_DIR = path.resolve(__dirname, "..");
 const RPC = "http://127.0.0.1:8547";
 
 process.env.RPC_URL = RPC;
-process.env.DATABASE_URL = "file:./prisma/demo.db";
+process.env.DATABASE_URL = "file:./demo.db";
 process.env.FLIGHT_PROVIDER = "mock";
 process.env.MOCK_DEPARTS_IN_SEC = "35";
 process.env.MOCK_FLIGHT_DURATION_SEC = "25";
@@ -25,7 +25,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 async function main() {
   log("resetting demo database");
-  execSync("rm -f prisma/demo.db prisma/demo.db-journal && npx prisma db push --skip-generate", {
+  execSync("rm -rf prisma/demo.db prisma/demo.db-journal && npx prisma db push --skip-generate", {
     cwd: ORACLE_DIR,
     stdio: "pipe",
     env: process.env,

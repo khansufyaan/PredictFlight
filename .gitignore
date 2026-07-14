@@ -6,7 +6,8 @@ contracts/out/
 contracts/cache/
 contracts/broadcast/
 oracle/dist/
-oracle/prisma/dev.db*
+oracle/prisma/*.db
+oracle/prisma/*.db-journal
 oracle/*.db
 web/.next/
 web/out/

@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-board-bg text-gray-100 font-mono;
+  font-variant-numeric: tabular-nums;
+}
+
+.board-card {
+  @apply bg-board-panel border border-board-line rounded-lg;
+}
+
+.flap {
+  @apply uppercase tracking-widest;
+}
+
+.btn {
+  @apply rounded px-3 py-2 text-sm font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+}
+
+.btn-green {
+  @apply btn bg-board-green/15 text-board-green border border-board-green/50 hover:bg-board-green/30;
+}
+
+.btn-red {
+  @apply btn bg-board-red/15 text-board-red border border-board-red/50 hover:bg-board-red/30;
+}
+
+.btn-amber {
+  @apply btn bg-board-amber/15 text-board-amber border border-board-amber/50 hover:bg-board-amber/30;
+}
