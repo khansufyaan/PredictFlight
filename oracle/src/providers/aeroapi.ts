@@ -1,0 +1,95 @@
+import type { Route } from "../routes20.js";
+import { config } from "../config.js";
+import type { FlightDataProvider, FlightStatus, ScheduledFlight } from "./types.js";
+
+const BASE = "https://aeroapi.flightaware.com/aeroapi";
+
+async function aeroGet(path: string): Promise<any> {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { "x-apikey": config.aeroApiKey, Accept: "application/json" },
+  });
+  if (res.status === 429) throw new Error("AeroAPI rate limited");
+  if (!res.ok) throw new Error(`AeroAPI ${res.status} on ${path}`);
+  return res.json();
+}
+
+const toEpoch = (iso: string | null | undefined): number | undefined =>
+  iso ? Math.floor(Date.parse(iso) / 1000) : undefined;
+
+/**
+ * FlightAware AeroAPI v4 provider.
+ *  - listFlights: GET /schedules/{start}/{end}?origin&destination (first flight
+ *    per route per day keeps market volume ~= 20/day for the MVP).
+ *  - getStatus: GET /flights/{ident} filtered to the matching departure, using
+ *    actual_on (touchdown), cancelled, diverted and actual destination.
+ */
+export class AeroApiProvider implements FlightDataProvider {
+  readonly name = "aeroapi";
+
+  constructor() {
+    if (!config.aeroApiKey) throw new Error("AEROAPI_KEY is required for FLIGHT_PROVIDER=aeroapi");
+  }
+
+  async listFlights(routes: Route[], dateISO: string): Promise<ScheduledFlight[]> {
+    const out: ScheduledFlight[] = [];
+    const next = new Date(new Date(`${dateISO}T00:00:00Z`).getTime() + 86400_000)
+      .toISOString()
+      .slice(0, 10);
+    for (const r of routes) {
+      try {
+        const data = await aeroGet(
+          `/schedules/${dateISO}/${next}?origin=${r.origin}&destination=${r.destination}&max_pages=1`,
+        );
+        const f = (data.scheduled ?? [])[0];
+        if (!f) continue;
+        const dep = toEpoch(f.scheduled_out ?? f.scheduled_off);
+        const arr = toEpoch(f.scheduled_in ?? f.scheduled_on);
+        if (!dep || !arr || arr <= dep) continue;
+        const ident: string = f.ident ?? r.flightNumber;
+        out.push({
+          flightKey: `${ident}|${r.origin}|${r.destination}|${dateISO}|${dep}`,
+          flightNumber: ident,
+          origin: r.origin,
+          destination: r.destination,
+          scheduledDeparture: dep,
+          scheduledArrival: arr,
+        });
+      } catch (err) {
+        console.warn(`[aeroapi] schedule fetch failed ${r.origin}-${r.destination}:`, err);
+      }
+    }
+    return out;
+  }
+
+  async getStatus(flight: ScheduledFlight): Promise<FlightStatus> {
+    const start = new Date((flight.scheduledDeparture - 6 * 3600) * 1000).toISOString();
+    const end = new Date((flight.scheduledDeparture + 6 * 3600) * 1000).toISOString();
+    const data = await aeroGet(
+      `/flights/${encodeURIComponent(flight.flightNumber)}?start=${start}&end=${end}&max_pages=1`,
+    );
+    const flights: any[] = data.flights ?? [];
+    // pick the leg whose scheduled departure is closest to ours
+    const leg = flights
+      .map((f) => ({ f, dep: toEpoch(f.scheduled_out ?? f.scheduled_off) ?? 0 }))
+      .sort(
+        (a, b) =>
+          Math.abs(a.dep - flight.scheduledDeparture) - Math.abs(b.dep - flight.scheduledDeparture),
+      )[0]?.f;
+    if (!leg) return { phase: "unknown" };
+
+    if (leg.cancelled) return { phase: "cancelled" };
+    const touchdown = toEpoch(leg.actual_on);
+    const actualDestination: string | undefined =
+      leg.destination?.code_iata ?? leg.destination?.code ?? undefined;
+    if (touchdown) {
+      const diverted = leg.diverted || (actualDestination && actualDestination !== flight.destination);
+      return {
+        phase: diverted ? "diverted" : "landed",
+        actualTouchdown: touchdown,
+        actualDestination,
+      };
+    }
+    const departed = toEpoch(leg.actual_off ?? leg.actual_out);
+    return { phase: departed ? "active" : "scheduled" };
+  }
+}

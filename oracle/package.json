@@ -1,0 +1,31 @@
+{
+  "name": "flightpool-oracle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "tsc --noEmit",
+    "demo": "tsx src/demo.ts",
+    "deploy:local": "tsx src/scripts/deploy-local.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "9.0.1",
+    "@prisma/client": "5.22.0",
+    "dotenv": "16.4.5",
+    "ethers": "6.13.4",
+    "fastify": "4.28.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.9.0",
+    "prisma": "5.22.0",
+    "tsx": "4.19.2",
+    "typescript": "5.6.3"
+  }
+}

@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Market {
+  id                 String   @id
+  flightKey          String   @unique
+  flightNumber       String
+  origin             String
+  destination        String
+  scheduledDeparture Int
+  scheduledArrival   Int
+  status             String   @default("OPEN")
+  outcome            String   @default("UNRESOLVED")
+  resolvedAt         Int?
+  actualTouchdown    Int?
+  needsReview        Boolean  @default(false)
+  onTimePool         BigInt   @default(0)
+  latePool           BigInt   @default(0)
+  createTxHash       String?
+  resolveTxHash      String?
+  createdAt          DateTime @default(now())
+
+  deposits   Deposit[]
+  claims     Claim[]
+  snapshots  OddsSnapshot[]
+  challenges Challenge[]
+}
+
+model Deposit {
+  id          Int    @id @default(autoincrement())
+  marketId    String
+  user        String
+  side        String
+  amount      BigInt
+  txHash      String
+  logIndex    Int
+  blockNumber Int
+  timestamp   Int
+  market      Market @relation(fields: [marketId], references: [id])
+
+  @@unique([txHash, logIndex])
+  @@index([user])
+}
+
+model Claim {
+  id          Int    @id @default(autoincrement())
+  marketId    String
+  user        String
+  payout      BigInt
+  txHash      String
+  logIndex    Int
+  blockNumber Int
+  timestamp   Int
+  market      Market @relation(fields: [marketId], references: [id])
+
+  @@unique([txHash, logIndex])
+  @@index([user])
+}
+
+model OddsSnapshot {
+  id         Int    @id @default(autoincrement())
+  marketId   String
+  timestamp  Int
+  onTimePool BigInt
+  latePool   BigInt
+  market     Market @relation(fields: [marketId], references: [id])
+
+  @@index([marketId, timestamp])
+}
+
+model Challenge {
+  code      String   @id
+  marketId  String
+  side      String
+  creator   String
+  acceptor  String?
+  createdAt DateTime @default(now())
+  market    Market   @relation(fields: [marketId], references: [id])
+}
+
+model IndexerState {
+  id        Int @id @default(1)
+  lastBlock Int @default(0)
+}

@@ -1,0 +1,64 @@
+import { config } from "../config.js";
+import { db } from "../db.js";
+import { getProvider } from "../providers/index.js";
+import { resolveOnChain } from "../settlement.js";
+import type { ScheduledFlight } from "../providers/types.js";
+
+/**
+ * Arrival watcher: for every market past its scheduled departure and not yet
+ * resolved, poll the FlightDataProvider and settle when terminal:
+ *  - landed:   touchdown <= scheduled arrival + 15min => ON_TIME, else LATE
+ *  - diverted: LATE
+ *  - cancelled: VOID
+ *  - nothing by scheduled arrival + 6h: flag needsReview, never auto-resolve
+ */
+export async function runWatcher(): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const markets = await db.market.findMany({
+    where: { status: { in: ["OPEN", "LOCKED"] }, scheduledDeparture: { lte: now } },
+  });
+  const provider = getProvider();
+
+  for (const m of markets) {
+    if (m.status === "OPEN") {
+      await db.market.update({ where: { id: m.id }, data: { status: "LOCKED" } });
+    }
+    const flight: ScheduledFlight = {
+      flightKey: m.flightKey,
+      flightNumber: m.flightNumber,
+      origin: m.origin,
+      destination: m.destination,
+      scheduledDeparture: m.scheduledDeparture,
+      scheduledArrival: m.scheduledArrival,
+    };
+
+    try {
+      const status = await provider.getStatus(flight);
+
+      if (status.phase === "cancelled") {
+        await resolveOnChain(m.id, "VOID", 0);
+        continue;
+      }
+      if (status.phase === "diverted" && status.actualTouchdown) {
+        await resolveOnChain(m.id, "LATE", status.actualTouchdown);
+        continue;
+      }
+      if (status.phase === "landed" && status.actualTouchdown) {
+        const outcome =
+          status.actualTouchdown <= m.scheduledArrival + config.onTimeThresholdSec
+            ? "ON_TIME"
+            : "LATE";
+        await resolveOnChain(m.id, outcome, status.actualTouchdown);
+        continue;
+      }
+
+      // no terminal data yet
+      if (now > m.scheduledArrival + config.manualReviewAfterSec && !m.needsReview) {
+        console.warn(`[watcher] ${m.flightKey} has no data 6h past arrival — flagged for review`);
+        await db.market.update({ where: { id: m.id }, data: { needsReview: true } });
+      }
+    } catch (err) {
+      console.error(`[watcher] ${m.flightKey}:`, err);
+    }
+  }
+}
