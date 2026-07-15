@@ -2,9 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { api, type Market } from "@/lib/api";
-import { AIRLINES, airlineOf, OTHER_AIRLINE } from "@/lib/airlines";
+import { AIRLINES, airlineOf } from "@/lib/airlines";
 import { AirlineBadge } from "@/components/AirlineBadge";
 import { MarketCard } from "@/components/MarketCard";
 
@@ -18,12 +19,20 @@ function dayLabel(epochSec: number): string {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
+const isTopCarrier = (m: Market) => airlineOf(m.flightNumber).key !== "other";
+
 export default function Home() {
+  const router = useRouter();
   const { data: markets, isLoading, error } = useQuery({ queryKey: ["markets"], queryFn: api.markets });
   const [selected, setSelected] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const q = query.trim().toUpperCase();
 
-  const open = useMemo(() => markets?.filter((m) => m.status === "OPEN") ?? [], [markets]);
-  const locked = markets?.filter((m) => m.status === "LOCKED") ?? [];
+  const open = useMemo(
+    () => markets?.filter((m) => m.status === "OPEN" && isTopCarrier(m)) ?? [],
+    [markets],
+  );
+  const locked = markets?.filter((m) => m.status === "LOCKED" && isTopCarrier(m)) ?? [];
 
   const counts = useMemo(() => {
     const c = new Map<string, number>();
@@ -34,7 +43,19 @@ export default function Home() {
     return c;
   }, [open]);
 
-  const shown = selected ? open.filter((m) => airlineOf(m.flightNumber).key === selected) : open;
+  // flight-number search across every market, any status
+  const searchHits = useMemo(() => {
+    if (!q) return [];
+    return (markets ?? [])
+      .filter((m) => m.flightNumber.toUpperCase().includes(q))
+      .sort((a, b) => b.scheduledDeparture - a.scheduledDeparture)
+      .slice(0, 5);
+  }, [markets, q]);
+
+  const shown = open
+    .filter((m) => !selected || airlineOf(m.flightNumber).key === selected)
+    .filter((m) => !q || m.flightNumber.toUpperCase().includes(q));
+
   const byDay = useMemo(() => {
     const g = new Map<string, Market[]>();
     for (const m of [...shown].sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)) {
@@ -44,15 +65,17 @@ export default function Home() {
     return g;
   }, [shown]);
 
-  const airlineChoices = [...AIRLINES, OTHER_AIRLINE].filter(
-    (a) => a.key !== "other" || (counts.get("other") ?? 0) > 0,
-  );
+  const goToExact = () => {
+    const exact =
+      (markets ?? []).find((m) => m.flightNumber.toUpperCase() === q) ?? searchHits[0];
+    if (exact) router.push(`/market/${exact.id}`);
+  };
 
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="flap text-sm font-bold text-board-amber">
-          Call the landing. Win back your airfare.
+          Predict the landing. Win back your fare.
         </h1>
         <p className="mt-1 text-xs text-board-dim">
           Bet USDC on whether flights land <span className="text-board-green">on time</span> or{" "}
@@ -60,36 +83,67 @@ export default function Home() {
         </p>
       </div>
 
+      <div>
+        <div className="board-card flex items-center gap-2 px-3 py-2">
+          <span className="text-board-dim">✈</span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && goToExact()}
+            placeholder="Search your flight number — e.g. UA415"
+            className="w-full bg-transparent text-sm uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal placeholder:text-board-dim focus:outline-none"
+          />
+          {q && (
+            <button onClick={() => setQuery("")} className="text-xs text-board-dim hover:text-board-amber">
+              ✕
+            </button>
+          )}
+        </div>
+        {q && searchHits.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {searchHits.map((m) => (
+              <Link
+                key={m.id}
+                href={`/market/${m.id}`}
+                className="board-card flex items-center gap-2 px-2.5 py-1.5 text-xs hover:border-board-amber/60"
+              >
+                <AirlineBadge airline={airlineOf(m.flightNumber)} />
+                <span className="flap font-bold text-board-amber">{m.flightNumber}</span>
+                <span className="text-board-dim">
+                  {m.origin}→{m.destination} · {m.status.toLowerCase()}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+        {q && searchHits.length === 0 && (
+          <p className="mt-2 text-center text-[11px] text-board-dim">
+            No market for &ldquo;{q}&rdquo; yet — markets open up to 3 days before departure.
+          </p>
+        )}
+      </div>
+
       <section>
         <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
           Pick your airline
         </h2>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-          <button
-            onClick={() => setSelected(null)}
-            className={`board-card flex flex-col items-center gap-1.5 p-3 transition-all ${
-              selected === null ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.15)]" : "hover:border-board-amber/40"
-            }`}
-          >
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-board-line text-base font-bold">
-              ✈
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider">All</span>
-            <span className="text-[9px] text-board-dim">{open.length} open</span>
-          </button>
-          {airlineChoices.map((a) => {
+        <div className="grid grid-cols-5 gap-2">
+          {AIRLINES.map((a) => {
             const n = counts.get(a.key) ?? 0;
+            const active = selected === a.key;
             return (
               <button
                 key={a.key}
-                onClick={() => setSelected(a.key)}
+                onClick={() => setSelected(active ? null : a.key)}
                 disabled={n === 0}
-                className={`board-card flex flex-col items-center gap-1.5 p-3 transition-all disabled:opacity-35 ${
-                  selected === a.key ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.15)]" : "hover:border-board-amber/40"
+                className={`board-card flex flex-col items-center gap-1.5 p-2.5 transition-all disabled:opacity-35 ${
+                  active
+                    ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.15)]"
+                    : "hover:border-board-amber/40"
                 }`}
               >
                 <AirlineBadge airline={a} size="lg" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">{a.name}</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider">{a.name}</span>
                 <span className="text-[9px] text-board-dim">{n} open</span>
               </button>
             );
@@ -111,12 +165,11 @@ export default function Home() {
       ))}
       {shown.length === 0 && !isLoading && error == null && (
         <p className="text-center text-xs text-board-dim">
-          No open flights{selected ? " for this airline" : ""} right now. New departures board every
-          few hours.
+          No open flights match. New departures hit the board twice a day.
         </p>
       )}
 
-      {locked.length > 0 && (
+      {locked.length > 0 && !q && (
         <section>
           <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
             In the air — locked

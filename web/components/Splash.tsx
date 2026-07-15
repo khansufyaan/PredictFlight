@@ -48,33 +48,30 @@ export function Splash() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-8 bg-board-bg px-6">
-      <div className="flex gap-1.5">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-12 bg-[#070a16] px-4">
+      <div className="flex items-end gap-2 sm:gap-3">
         {display.map((ch, i) => (
           <span
             key={i}
-            className={`flap-tile h-16 w-12 rounded-md text-3xl sm:h-20 sm:w-14 sm:text-4xl ${
+            className={`flap-tile splash-tile h-20 w-[52px] rounded-lg text-5xl sm:h-36 sm:w-24 sm:text-8xl ${
               !settled ? "animate-pulse" : i === WORD.length - 1 ? "flap-lag" : ""
             }`}
           >
             {ch}
           </span>
         ))}
-        <span className="self-end pb-1 text-xl font-bold text-board-dim">.fun</span>
+        <span className="pb-1 text-2xl font-bold text-board-dim sm:text-4xl">.fun</span>
       </div>
       <div
         className={`text-center transition-opacity duration-700 ${settled ? "opacity-100" : "opacity-0"}`}
       >
-        <p className="flap text-sm text-board-amber">Call the landing. Win back your airfare.</p>
-        <p className="mt-2 text-xs text-board-dim">
-          Bet on whether flights arrive on time — winners split the losers&apos; pool.
+        <p className="flap splash-tagline text-lg font-extrabold sm:text-3xl">
+          Predict the landing.
+          <br className="sm:hidden" /> Win back your fare.
         </p>
-        <button className="btn-amber mt-8 px-8 py-3" onClick={board}>
+        <button className="btn-amber splash-cta mt-10 px-12 py-4 !text-lg" onClick={board}>
           Board now ✈
         </button>
-        <p className="mt-3 text-[10px] uppercase tracking-widest text-board-dim">
-          or press enter
-        </p>
       </div>
     </div>
   );

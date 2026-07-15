@@ -5,7 +5,7 @@ import type { Market } from "@/lib/api";
 import { airlineOf } from "@/lib/airlines";
 import { dateShort, hhmm, usdc } from "@/lib/format";
 import { AirlineBadge } from "./AirlineBadge";
-import { Countdown } from "./Countdown";
+import { FlipCountdown } from "./FlipCountdown";
 import { OddsBar } from "./OddsBar";
 
 const statusColor: Record<string, string> = {
@@ -54,8 +54,8 @@ export function MarketCard({ market }: { market: Market }) {
               Late · ${usdc(market.latePool)}
             </span>
           </div>
-          <div className="mt-2 text-center text-[11px] text-board-amber">
-            ⏱ betting closes in <Countdown to={market.scheduledDeparture} doneLabel="moments" />
+          <div className="mt-2.5 flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider text-board-dim">
+            closes in <FlipCountdown to={market.scheduledDeparture} doneLabel="moments" />
           </div>
         </>
       )}

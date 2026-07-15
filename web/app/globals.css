@@ -55,6 +55,50 @@ body {
   @apply text-board-amber/70;
 }
 
+/* boarding splash: bigger, bolder, yellow that pops */
+.splash-tile {
+  color: #ffd23f;
+  text-shadow: 0 0 24px rgba(255, 210, 63, 0.55);
+  background-image: linear-gradient(#28335c, #101529);
+  border-color: rgba(0, 0, 0, 0.75);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(255, 210, 63, 0.08);
+  font-weight: 800;
+}
+
+.splash-tile.flap-lag {
+  color: rgba(255, 210, 63, 0.75);
+}
+
+.splash-tagline {
+  color: #ffd23f;
+  text-shadow: 0 0 30px rgba(255, 210, 63, 0.45);
+}
+
+.splash-cta {
+  background-color: rgba(255, 210, 63, 0.18) !important;
+  border-color: rgba(255, 210, 63, 0.75) !important;
+  color: #ffd23f !important;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.25);
+}
+
+/* countdown digits flip over when they change (keyed remount per char) */
+.flip-digit {
+  animation: flapflip 0.35s ease-out;
+}
+
+@keyframes flapflip {
+  0% {
+    transform: perspective(60px) rotateX(-80deg);
+    opacity: 0.4;
+  }
+  100% {
+    transform: perspective(60px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
 /* deposit-confirmed takeoff */
 .plane-fly {
   position: absolute;
