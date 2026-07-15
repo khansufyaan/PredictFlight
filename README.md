@@ -1,8 +1,9 @@
-# FlightPool ✈
+# Jetlag ✈ — jetlag.fun
 
-PvP parimutuel prediction markets on flight punctuality, settled in USDC on
-Base. Bet ON TIME or LATE before departure; after the flight lands, winners
-split the losing pool pro-rata minus a 2% fee.
+_The jet is lagging._ PvP parimutuel prediction markets on flight punctuality,
+settled in USDC on Base. Bet ON TIME or LATE before departure; after the
+flight lands, winners split the losing pool pro-rata minus a 2% fee.
+(Codebase was built as "FlightPool" — contract and package names keep that id.)
 
 ```
 contracts/   Foundry — FlightMarket.sol (registry of parimutuel markets)

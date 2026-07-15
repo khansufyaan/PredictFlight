@@ -82,3 +82,8 @@ Decisions made without asking, as instructed. Newest last.
     stateful process (cron jobs + SQLite + event indexer) and does not fit
     Vercel's serverless model — it needs a VM/container host (Railway, Fly,
     Render, a VPS).
+
+18. **Brand: Jetlag (jetlag.fun)** — chosen for the double meaning (traveler
+    jet lag / the jet is lagging). Wordmark is a split-flap tile row where the
+    final tile renders mid-flip — the "G" lags. Contract/package identifiers
+    keep the FlightPool name; renaming a deployed contract has no benefit.

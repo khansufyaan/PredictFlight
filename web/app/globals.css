@@ -30,3 +30,21 @@ body {
 .btn-amber {
   @apply btn bg-board-amber/15 text-board-amber border border-board-amber/50 hover:bg-board-amber/30;
 }
+
+/* split-flap wordmark tiles */
+.flap-tile {
+  @apply relative flex items-center justify-center border border-black/50 bg-[#1a1e29] font-bold text-board-amber;
+  background-image: linear-gradient(#20242f, #171a23);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.flap-tile::after {
+  content: "";
+  @apply absolute inset-x-0 top-1/2 h-px bg-black/70;
+}
+
+/* the last tile is still flipping — the G lags, that's the brand */
+.flap-lag {
+  transform: perspective(80px) rotateX(24deg) translateY(1px);
+  @apply text-board-amber/70;
+}

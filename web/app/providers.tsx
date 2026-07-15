@@ -11,7 +11,7 @@ import { CHAIN_ID, RPC_URL, WALLETCONNECT_PROJECT_ID } from "@/lib/config";
 const chain = [base, baseSepolia, foundry].find((c) => c.id === CHAIN_ID) ?? foundry;
 
 const wagmiConfig = getDefaultConfig({
-  appName: "FlightPool",
+  appName: "Jetlag",
   projectId: WALLETCONNECT_PROJECT_ID,
   chains: [chain],
   transports: { [chain.id]: http(RPC_URL) },

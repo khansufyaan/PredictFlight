@@ -13,6 +13,10 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
+      <p className="text-center text-xs text-board-dim">
+        Bet USDC on whether flights land <span className="text-board-green">on time</span> or{" "}
+        <span className="text-board-red">late</span>. Winners split the losers&apos; pool.
+      </p>
       <Section title="Departures — betting open" empty="No open markets. The board refreshes as flights are scheduled.">
         {open.map((m) => (
           <MarketCard key={m.id} market={m} />
