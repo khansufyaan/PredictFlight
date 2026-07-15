@@ -150,3 +150,10 @@ addresses; deploys cleanly to Vercel (root directory `web/`).
 - `POST /admin/resolve` `{marketId, outcome, actualTouchdown}` (header `x-admin-secret`) — for flights flagged `needsReview`
 
 Design decisions and their rationale live in [DECISIONS.md](DECISIONS.md).
+
+## Live deployment (Base mainnet)
+
+- **FlightMarket**: [`0x42fc886ea8cab2934981107606a610e18c9a3e56`](https://basescan.org/address/0x42fc886ea8cab2934981107606a610e18c9a3e56)
+- **Oracle/owner signer**: `0x414b6C1e7797D3b4Ccb671b9F4B735dc861629e0`
+- **Oracle API**: https://oracle-production-ee93.up.railway.app (Railway, AeroAPI provider)
+- **Web**: https://predict-flight.vercel.app
