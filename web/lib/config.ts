@@ -7,3 +7,4 @@ export const FLIGHT_MARKET_ADDRESS = (process.env.NEXT_PUBLIC_FLIGHT_MARKET_ADDR
   "0x0000000000000000000000000000000000000000") as `0x${string}`;
 export const WALLETCONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "flightpool-dev";
+export const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "cml6qnx4r03epju0cps144x4t";

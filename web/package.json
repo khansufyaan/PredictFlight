@@ -9,13 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@rainbow-me/rainbowkit": "2.2.1",
+    "@farcaster/mini-app-solana": "^2.0.0",
+    "@farcaster/miniapp-sdk": "^0.3.0",
+    "@privy-io/react-auth": "^3.35.1",
+    "@privy-io/wagmi": "^4.0.14",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@stripe/crypto": "^1.1.1",
+    "@stripe/stripe-js": "^9.10.0",
     "@tanstack/react-query": "5.62.7",
     "next": "14.2.21",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "viem": "2.21.55",
-    "wagmi": "2.14.3"
+    "viem": "^2.52.0",
+    "wagmi": "^2.19.5"
   },
   "devDependencies": {
     "@types/node": "22.9.0",

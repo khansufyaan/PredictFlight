@@ -39,9 +39,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileTabs />
           <Splash />
           <PlaneFly />
-          <footer className="mx-auto max-w-3xl px-4 pb-8 text-center text-[10px] text-board-dim">
-            jetlag.fun ✈ the jet is lagging · parimutuel pools · 2% fee on winnings · 24h dispute
-            window before claims
+          <footer className="mx-auto max-w-3xl space-y-1.5 px-4 pb-8 text-center text-[10px] text-board-dim">
+            <div>
+              jetlag.fun ✈ the jet is lagging · parimutuel pools · 2% fee on winnings · 24h
+              dispute window before claims
+            </div>
+            <div>
+              <Link href="/terms" className="underline hover:text-board-amber">
+                Terms &amp; Conditions
+              </Link>
+              <span className="mx-2">·</span>
+              <Link href="/privacy" className="underline hover:text-board-amber">
+                Privacy Policy
+              </Link>
+            </div>
           </footer>
         </Providers>
       </body>

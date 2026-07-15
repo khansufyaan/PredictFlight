@@ -1,20 +1,19 @@
 "use client";
 
-import { RainbowKitProvider, darkTheme, getDefaultConfig } from "@rainbow-me/rainbowkit";
-import "@rainbow-me/rainbowkit/styles.css";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { WagmiProvider, createConfig } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { http, WagmiProvider } from "wagmi";
+import { http } from "wagmi";
 import { base, baseSepolia, foundry } from "wagmi/chains";
-import { CHAIN_ID, RPC_URL, WALLETCONNECT_PROJECT_ID } from "@/lib/config";
+import { CHAIN_ID, PRIVY_APP_ID, RPC_URL, WALLETCONNECT_PROJECT_ID } from "@/lib/config";
 
 const chain = [base, baseSepolia, foundry].find((c) => c.id === CHAIN_ID) ?? foundry;
 
-const wagmiConfig = getDefaultConfig({
-  appName: "Jetlag",
-  projectId: WALLETCONNECT_PROJECT_ID,
+const wagmiConfig = createConfig({
   chains: [chain],
-  transports: { [chain.id]: http(RPC_URL) },
+  // only `chain` is active; the extra keys just satisfy the union type
+  transports: { [base.id]: http(RPC_URL), [baseSepolia.id]: http(RPC_URL), [foundry.id]: http(RPC_URL) },
   ssr: true,
 });
 
@@ -23,12 +22,32 @@ export function Providers({ children }: { children: React.ReactNode }) {
     () => new QueryClient({ defaultOptions: { queries: { refetchInterval: 5000 } } }),
   );
   return (
-    <WagmiProvider config={wagmiConfig}>
+    <PrivyProvider
+      appId={PRIVY_APP_ID}
+      config={{
+        appearance: {
+          theme: "dark",
+          accentColor: "#fbbf24",
+          landingHeader: "Board Jetlag",
+          loginMessage: "Sign in to bet on flights",
+          walletList: [
+            "coinbase_wallet",
+            "metamask",
+            "rainbow",
+            "wallet_connect",
+            "detected_wallets",
+          ],
+        },
+        loginMethods: ["email", "google", "wallet"],
+        embeddedWallets: { ethereum: { createOnLogin: "users-without-wallets" } },
+        defaultChain: chain,
+        supportedChains: [chain],
+        walletConnectCloudProjectId: WALLETCONNECT_PROJECT_ID,
+      }}
+    >
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider theme={darkTheme({ accentColor: "#ffb300" })}>
-          {children}
-        </RainbowKitProvider>
+        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
       </QueryClientProvider>
-    </WagmiProvider>
+    </PrivyProvider>
   );
 }

@@ -87,3 +87,19 @@ Decisions made without asking, as instructed. Newest last.
     jet lag / the jet is lagging). Wordmark is a split-flap tile row where the
     final tile renders mid-flip — the "G" lags. Contract/package identifiers
     keep the FlightPool name; renaming a deployed contract has no benefit.
+
+19. **Privy replaces RainbowKit/WalletConnect** — user supplied a Privy app ID
+    and asked for the swap. Privy is a superset: native Coinbase Wallet +
+    Smart Wallet, email/Google login with embedded wallets for no-wallet
+    users, WalletConnect kept as a fallback connector inside Privy's modal.
+    `@privy-io/wagmi` wraps wagmi so existing hooks work unchanged. Install
+    needed `--legacy-peer-deps` (Privy's smart-account deps pin a different
+    `ox` than viem 2.52) plus explicit installs of Privy's optional peers
+    (@stripe/crypto, @stripe/stripe-js, @farcaster/mini-app-solana,
+    @solana/wallet-adapter-react, @farcaster/miniapp-sdk) because Next's
+    webpack resolves them eagerly.
+
+20. **Legal pages** — /terms and /privacy written vendor-neutral (no named
+    technology providers, per user request), linked from the global footer.
+    Honest mechanics: 2% fee on winnings only, 24h dispute window, VOID
+    refunds, public-blockchain permanence, 18+ / jurisdiction burden on user.
