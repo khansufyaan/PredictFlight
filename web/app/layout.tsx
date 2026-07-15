@@ -4,6 +4,8 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { ConnectButton } from "@/components/ConnectButton";
 import { Logo } from "@/components/Logo";
+import { PlaneFly } from "@/components/PlaneFly";
+import { Splash } from "@/components/Splash";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jetlag.fun"),
@@ -32,6 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/" className="flap hover:text-board-amber">
                   Departures
                 </Link>
+                <Link href="/past" className="flap hover:text-board-amber">
+                  Landed
+                </Link>
                 <Link href="/leaderboard" className="flap hover:text-board-amber">
                   Leaders
                 </Link>
@@ -40,6 +45,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </header>
           <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+          <Splash />
+          <PlaneFly />
           <footer className="mx-auto max-w-3xl px-4 pb-8 text-center text-[10px] text-board-dim">
             jetlag.fun ✈ the jet is lagging · parimutuel pools · 2% fee on winnings · 24h dispute
             window before claims

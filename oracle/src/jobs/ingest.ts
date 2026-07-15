@@ -1,17 +1,23 @@
 import { ROUTES } from "../routes20.js";
+import { config } from "../config.js";
 import { db } from "../db.js";
 import { computeMarketId, flightIdBytes32, flightMarket, withRetry } from "../chain.js";
 import { getProvider } from "../providers/index.js";
 
-/** Pull tomorrow's flights for the 20 routes and create a market per flight
- *  (on-chain first, then the db mirror row). Safe to re-run: existing
- *  flightKeys are skipped. */
+/** Pull upcoming flights (1..INGEST_DAYS_AHEAD days out) for the 20 routes and
+ *  create a market per flight (on-chain first, then the db mirror row). Safe
+ *  to re-run: existing flightKeys are skipped. */
 export async function runIngestion(): Promise<number> {
   const provider = getProvider();
-  const tomorrow = new Date(Date.now() + 86400_000).toISOString().slice(0, 10);
-  const flights = await provider.listFlights(ROUTES, tomorrow);
   const fm = flightMarket();
   let created = 0;
+
+  const days = Math.max(1, config.ingestDaysAhead);
+  const flights = [];
+  for (let d = 1; d <= days; d++) {
+    const date = new Date(Date.now() + d * 86400_000).toISOString().slice(0, 10);
+    flights.push(...(await provider.listFlights(ROUTES, date)));
+  }
 
   for (const f of flights) {
     const existing = await db.market.findUnique({ where: { flightKey: f.flightKey } });

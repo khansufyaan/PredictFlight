@@ -3,12 +3,18 @@
 @tailwind utilities;
 
 body {
-  @apply bg-board-bg text-gray-100 font-mono;
+  @apply text-gray-100 font-mono;
   font-variant-numeric: tabular-nums;
+  background:
+    radial-gradient(1100px 500px at 50% -120px, rgba(56, 121, 248, 0.16), transparent),
+    radial-gradient(700px 380px at 85% 15%, rgba(251, 191, 36, 0.05), transparent),
+    #0b1020;
+  background-attachment: fixed;
 }
 
 .board-card {
-  @apply bg-board-panel border border-board-line rounded-lg;
+  @apply bg-board-panel/90 border border-board-line rounded-xl;
+  box-shadow: 0 4px 18px rgba(3, 6, 18, 0.45);
 }
 
 .flap {
@@ -16,25 +22,25 @@ body {
 }
 
 .btn {
-  @apply rounded px-3 py-2 text-sm font-bold uppercase tracking-wider transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
+  @apply rounded-lg px-3 py-2 text-sm font-bold uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed;
 }
 
 .btn-green {
-  @apply btn bg-board-green/15 text-board-green border border-board-green/50 hover:bg-board-green/30;
+  @apply btn bg-board-green/15 text-board-green border border-board-green/50 hover:bg-board-green/30 hover:shadow-[0_0_18px_rgba(52,211,153,0.25)];
 }
 
 .btn-red {
-  @apply btn bg-board-red/15 text-board-red border border-board-red/50 hover:bg-board-red/30;
+  @apply btn bg-board-red/15 text-board-red border border-board-red/50 hover:bg-board-red/30 hover:shadow-[0_0_18px_rgba(251,113,133,0.25)];
 }
 
 .btn-amber {
-  @apply btn bg-board-amber/15 text-board-amber border border-board-amber/50 hover:bg-board-amber/30;
+  @apply btn bg-board-amber/15 text-board-amber border border-board-amber/50 hover:bg-board-amber/30 hover:shadow-[0_0_18px_rgba(251,191,36,0.3)];
 }
 
 /* split-flap wordmark tiles */
 .flap-tile {
-  @apply relative flex items-center justify-center border border-black/50 bg-[#1a1e29] font-bold text-board-amber;
-  background-image: linear-gradient(#20242f, #171a23);
+  @apply relative flex items-center justify-center border border-black/50 bg-[#1c2440] font-bold text-board-amber;
+  background-image: linear-gradient(#232c4d, #181f38);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
@@ -47,4 +53,54 @@ body {
 .flap-lag {
   transform: perspective(80px) rotateX(24deg) translateY(1px);
   @apply text-board-amber/70;
+}
+
+/* deposit-confirmed takeoff */
+.plane-fly {
+  position: absolute;
+  left: -8%;
+  bottom: 28%;
+  font-size: 2.6rem;
+  animation: takeoff 2.5s cubic-bezier(0.3, 0, 0.7, 0.4) forwards;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.5));
+}
+
+.plane-trail {
+  position: absolute;
+  left: -10%;
+  bottom: calc(28% + 1.2rem);
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.55));
+  animation: trail 2.5s cubic-bezier(0.3, 0, 0.7, 0.4) forwards;
+}
+
+@keyframes takeoff {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(120vw, -42vh) rotate(-14deg);
+    opacity: 1;
+  }
+}
+
+@keyframes trail {
+  0% {
+    width: 0;
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    width: 45vw;
+    transform: translate(78vw, -38vh) rotate(-14deg);
+    opacity: 0;
+  }
 }

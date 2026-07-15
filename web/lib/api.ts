@@ -13,6 +13,7 @@ export interface Market {
   resolvedAt: number | null;
   actualTouchdown: number | null;
   needsReview: boolean;
+  resolveTxHash?: string | null;
   onTimePool: string;
   latePool: string;
   impliedOnTimeProb: number;

@@ -11,6 +11,7 @@ import {
 } from "wagmi";
 import { erc20Abi, flightMarketAbi } from "@/lib/abi";
 import { api } from "@/lib/api";
+import { takeoff } from "@/components/PlaneFly";
 import { FLIGHT_MARKET_ADDRESS, USDC_ADDRESS } from "@/lib/config";
 import { usdc as fmtUsdc } from "@/lib/format";
 
@@ -74,6 +75,7 @@ export function DepositForm({
       reset();
       setStep("idle");
       setAmount("25");
+      takeoff(); // position taken — send a plane across the screen
       queryClient.invalidateQueries();
       if (challengeCode && address) {
         // indexer needs a beat to see the Deposited event

@@ -6,13 +6,14 @@ export default {
     extend: {
       colors: {
         board: {
-          bg: "#0a0c10",
-          panel: "#12151c",
-          line: "#232838",
-          amber: "#ffb300",
-          green: "#22c55e",
-          red: "#ef4444",
-          dim: "#8b93a7",
+          bg: "#0b1020",
+          panel: "#151d33",
+          line: "#28324e",
+          amber: "#fbbf24",
+          green: "#34d399",
+          red: "#fb7185",
+          dim: "#9aa7c7",
+          sky: "#38bdf8",
         },
       },
       fontFamily: {

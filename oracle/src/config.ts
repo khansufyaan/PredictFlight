@@ -24,6 +24,9 @@ export const config = {
 
   // jobs (ms). Defaults: ingest every 6h, watch every 2min, index every 15s.
   ingestIntervalMs: Number(process.env.INGEST_INTERVAL_MS ?? 6 * 60 * 60 * 1000),
+  /** create markets for departures up to N days ahead (each day = 1 AeroAPI
+   *  schedules call per route per ingest run — mind the API bill) */
+  ingestDaysAhead: Number(process.env.INGEST_DAYS_AHEAD ?? 2),
   watcherIntervalMs: Number(process.env.WATCHER_INTERVAL_MS ?? 2 * 60 * 1000),
   indexerIntervalMs: Number(process.env.INDEXER_INTERVAL_MS ?? 15 * 1000),
 
