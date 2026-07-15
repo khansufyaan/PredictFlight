@@ -4,13 +4,28 @@ import type { FlightDataProvider, FlightStatus, ScheduledFlight } from "./types.
 
 const BASE = "https://aeroapi.flightaware.com/aeroapi";
 
+// AeroAPI personal tier throttles bursts hard — space every call out and
+// back off on 429 instead of failing the whole ingest run.
+const MIN_GAP_MS = Number(process.env.AEROAPI_MIN_GAP_MS ?? 7000);
+let lastCallAt = 0;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function aeroGet(path: string): Promise<any> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "x-apikey": config.aeroApiKey, Accept: "application/json" },
-  });
-  if (res.status === 429) throw new Error("AeroAPI rate limited");
-  if (!res.ok) throw new Error(`AeroAPI ${res.status} on ${path}`);
-  return res.json();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const wait = lastCallAt + MIN_GAP_MS - Date.now();
+    if (wait > 0) await sleep(wait);
+    lastCallAt = Date.now();
+    const res = await fetch(`${BASE}${path}`, {
+      headers: { "x-apikey": config.aeroApiKey, Accept: "application/json" },
+    });
+    if (res.status === 429) {
+      await sleep(30_000 * attempt);
+      continue;
+    }
+    if (!res.ok) throw new Error(`AeroAPI ${res.status} on ${path}`);
+    return res.json();
+  }
+  throw new Error("AeroAPI rate limited (retries exhausted)");
 }
 
 const toEpoch = (iso: string | null | undefined): number | undefined =>
