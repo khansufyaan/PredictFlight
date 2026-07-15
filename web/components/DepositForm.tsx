@@ -142,8 +142,8 @@ export function DepositForm({
         : needsApproval && parsed > 0n
           ? `Approve ${amount} USDC`
           : side === 0
-            ? "Bet on time"
-            : "Bet late";
+            ? "Bet yes"
+            : "Bet no";
 
   return (
     <div className="board-card p-4">
@@ -156,24 +156,14 @@ export function DepositForm({
           onClick={() => !lockSide && setSide(0)}
           disabled={lockSide && side !== 0}
         >
-          Yes · on time
-          {deadline && (
-            <span className="block text-[9px] font-normal normal-case tracking-normal opacity-80">
-              lands by {hhmm(deadline)}
-            </span>
-          )}
+          Yes
         </button>
         <button
           className={`btn-red ${side === 1 ? "ring-2 ring-board-red" : "opacity-60"}`}
           onClick={() => !lockSide && setSide(1)}
           disabled={lockSide && side !== 1}
         >
-          No · late
-          {deadline && (
-            <span className="block text-[9px] font-normal normal-case tracking-normal opacity-80">
-              after {hhmm(deadline)}
-            </span>
-          )}
+          No
         </button>
       </div>
       <div className="mt-3 flex items-center gap-2">

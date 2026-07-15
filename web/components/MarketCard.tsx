@@ -42,10 +42,6 @@ export function MarketCard({ market }: { market: Market }) {
       <div className="mt-2 text-center text-sm font-bold text-board-amber">
         Will it land by {hhmm(deadline)}?
       </div>
-      <div className="mt-0.5 text-center text-[11px] text-board-dim">
-        {dateShort(market.scheduledDeparture)} · scheduled to arrive {hhmm(market.scheduledArrival)}{" "}
-        + 15 min grace
-      </div>
 
       <div className="mt-3">
         <OddsBar onTimeProb={market.impliedOnTimeProb} />
@@ -53,18 +49,8 @@ export function MarketCard({ market }: { market: Market }) {
       {market.status === "OPEN" && (
         <>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <span className="btn-green pointer-events-none flex flex-col items-center !py-1.5 text-center">
-              <span>Yes · on time</span>
-              <span className="text-[9px] font-normal normal-case tracking-normal opacity-80">
-                lands by {hhmm(deadline)} · ${usdc(market.onTimePool)} pool
-              </span>
-            </span>
-            <span className="btn-red pointer-events-none flex flex-col items-center !py-1.5 text-center">
-              <span>No · late</span>
-              <span className="text-[9px] font-normal normal-case tracking-normal opacity-80">
-                after {hhmm(deadline)} · ${usdc(market.latePool)} pool
-              </span>
-            </span>
+            <span className="btn-green pointer-events-none text-center">Yes</span>
+            <span className="btn-red pointer-events-none text-center">No</span>
           </div>
           <div className="mt-3 flex flex-col items-center gap-1.5">
             <span className="text-[10px] uppercase tracking-widest text-board-dim">

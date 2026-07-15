@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { ConnectButton } from "@/components/ConnectButton";
 import { Logo } from "@/components/Logo";
+import { MobileTabs, NavTabs } from "@/components/NavTabs";
 import { PlaneFly } from "@/components/PlaneFly";
 import { Splash } from "@/components/Splash";
 
@@ -26,37 +27,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <header className="sticky top-0 z-10 border-b border-board-line bg-board-bg/95 backdrop-blur">
-            <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:justify-between">
-              <div className="flex w-full items-center justify-between sm:w-auto">
-                <Link href="/" className="flex items-center">
-                  <Logo />
-                </Link>
-                <span className="sm:hidden">
-                  <ConnectButton />
-                </span>
-              </div>
-              <nav className="flex items-center gap-4 text-xs text-board-dim">
-                <Link href="/" className="flap hover:text-board-amber">
-                  <span className="hidden sm:inline">Departures</span>
-                  <span className="sm:hidden">Board</span>
-                </Link>
-                <Link href="/bets" className="flap whitespace-nowrap hover:text-board-amber">
-                  My bets
-                </Link>
-                <Link href="/past" className="flap hover:text-board-amber">
-                  Landed
-                </Link>
-                <Link href="/how" className="flap whitespace-nowrap hover:text-board-amber">
-                  <span className="hidden sm:inline">How it works</span>
-                  <span className="sm:hidden">FAQ</span>
-                </Link>
-                <span className="hidden sm:block">
-                  <ConnectButton />
-                </span>
-              </nav>
+            <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3">
+              <Link href="/" className="flex shrink-0 items-center">
+                <Logo />
+              </Link>
+              <NavTabs />
+              <ConnectButton />
             </div>
           </header>
-          <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+          <main className="mx-auto max-w-3xl px-4 py-6 pb-24 sm:pb-8">{children}</main>
+          <MobileTabs />
           <Splash />
           <PlaneFly />
           <footer className="mx-auto max-w-3xl px-4 pb-8 text-center text-[10px] text-board-dim">
