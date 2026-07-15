@@ -60,7 +60,7 @@ export default function ChallengePage() {
           This market is already {m.status.toLowerCase()} — too late to take the bet.
         </div>
       ) : (
-        <DepositForm marketId={m.id} defaultSide={takerSide} lockSide challengeCode={ch.code} />
+        <DepositForm marketId={m.id} deadline={m.scheduledArrival + 900} defaultSide={takerSide} lockSide challengeCode={ch.code} />
       )}
 
       <div className="text-center">

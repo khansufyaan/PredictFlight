@@ -13,17 +13,20 @@ import { erc20Abi, flightMarketAbi } from "@/lib/abi";
 import { api } from "@/lib/api";
 import { takeoff } from "@/components/PlaneFly";
 import { FLIGHT_MARKET_ADDRESS, USDC_ADDRESS } from "@/lib/config";
-import { usdc as fmtUsdc } from "@/lib/format";
+import { hhmm, usdc as fmtUsdc } from "@/lib/format";
 
 type Step = "idle" | "approving" | "depositing";
 
 export function DepositForm({
   marketId,
+  deadline,
   defaultSide,
   lockSide,
   challengeCode,
 }: {
   marketId: string;
+  /** land-by time (scheduled arrival + 15 min grace), epoch seconds */
+  deadline?: number;
   defaultSide?: 0 | 1;
   /** challenge flow: force the taker onto this side */
   lockSide?: boolean;
@@ -144,21 +147,33 @@ export function DepositForm({
 
   return (
     <div className="board-card p-4">
-      <div className="flap mb-3 text-xs text-board-dim">Place your bet</div>
+      <div className="flap mb-3 text-xs text-board-dim">
+        {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Place your bet"}
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <button
           className={`btn-green ${side === 0 ? "ring-2 ring-board-green" : "opacity-60"}`}
           onClick={() => !lockSide && setSide(0)}
           disabled={lockSide && side !== 0}
         >
-          On time
+          Yes · on time
+          {deadline && (
+            <span className="block text-[9px] font-normal normal-case tracking-normal opacity-80">
+              lands by {hhmm(deadline)}
+            </span>
+          )}
         </button>
         <button
           className={`btn-red ${side === 1 ? "ring-2 ring-board-red" : "opacity-60"}`}
           onClick={() => !lockSide && setSide(1)}
           disabled={lockSide && side !== 1}
         >
-          Late
+          No · late
+          {deadline && (
+            <span className="block text-[9px] font-normal normal-case tracking-normal opacity-80">
+              after {hhmm(deadline)}
+            </span>
+          )}
         </button>
       </div>
       <div className="mt-3 flex items-center gap-2">
@@ -184,6 +199,16 @@ export function DepositForm({
         </div>
       )}
       {error && <div className="mt-2 text-center text-[11px] text-board-red">{error}</div>}
+      {address && balance === 0n && (
+        <a
+          href="https://www.coinbase.com/how-to-buy/usdc"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 block text-center text-[11px] text-board-sky underline"
+        >
+          No USDC yet? Buy with a card on Coinbase (choose Base network) ↗
+        </a>
+      )}
     </div>
   );
 }

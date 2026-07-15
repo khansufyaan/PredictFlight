@@ -65,6 +65,29 @@ export async function buildApi(): Promise<FastifyInstance> {
 
   app.get("/leaderboard", async () => computeLeaderboard());
 
+  /** every market the wallet has a position in, with aggregated stakes */
+  app.get("/users/:address/positions", async (req) => {
+    const { address } = req.params as { address: string };
+    const deposits = await db.deposit.findMany({
+      where: { user: address.toLowerCase() },
+      include: { market: true },
+    });
+    const agg = new Map<string, { market: any; onTime: bigint; late: bigint }>();
+    for (const d of deposits) {
+      const cur = agg.get(d.marketId) ?? { market: d.market, onTime: 0n, late: 0n };
+      if (d.side === "ON_TIME") cur.onTime += d.amount;
+      else cur.late += d.amount;
+      agg.set(d.marketId, cur);
+    }
+    return [...agg.values()]
+      .sort((a, b) => b.market.scheduledDeparture - a.market.scheduledDeparture)
+      .map(({ market, onTime, late }) => ({
+        market: marketView(market),
+        onTime: onTime.toString(),
+        late: late.toString(),
+      }));
+  });
+
   app.post("/challenge", async (req, reply) => {
     const { marketId, side, creator } = (req.body ?? {}) as {
       marketId?: string;

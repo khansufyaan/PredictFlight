@@ -26,13 +26,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Providers>
           <header className="sticky top-0 z-10 border-b border-board-line bg-board-bg/95 backdrop-blur">
-            <div className="mx-auto flex max-w-3xl items-center justify-between gap-2 px-4 py-3">
-              <Link href="/" className="flex items-center">
-                <Logo />
-              </Link>
-              <nav className="flex items-center gap-3 text-xs text-board-dim">
+            <div className="mx-auto flex max-w-3xl flex-col items-center gap-3 px-4 py-3 sm:flex-row sm:justify-between">
+              <div className="flex w-full items-center justify-between sm:w-auto">
+                <Link href="/" className="flex items-center">
+                  <Logo />
+                </Link>
+                <span className="sm:hidden">
+                  <ConnectButton />
+                </span>
+              </div>
+              <nav className="flex items-center gap-4 text-xs text-board-dim">
                 <Link href="/" className="flap hover:text-board-amber">
-                  Departures
+                  <span className="hidden sm:inline">Departures</span>
+                  <span className="sm:hidden">Board</span>
+                </Link>
+                <Link href="/bets" className="flap whitespace-nowrap hover:text-board-amber">
+                  My bets
                 </Link>
                 <Link href="/past" className="flap hover:text-board-amber">
                   Landed
@@ -41,7 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <span className="hidden sm:inline">How it works</span>
                   <span className="sm:hidden">FAQ</span>
                 </Link>
-                <ConnectButton />
+                <span className="hidden sm:block">
+                  <ConnectButton />
+                </span>
               </nav>
             </div>
           </header>

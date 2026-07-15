@@ -64,8 +64,15 @@ async function get<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export interface UserPosition {
+  market: Market;
+  onTime: string;
+  late: string;
+}
+
 export const api = {
   markets: () => get<Market[]>("/markets"),
+  myPositions: (address: string) => get<UserPosition[]>(`/users/${address}/positions`),
   market: (id: string) => get<MarketDetail>(`/markets/${id}`),
   position: (id: string, address: string) =>
     get<{ onTime: string; late: string }>(`/markets/${id}/positions/${address}`),

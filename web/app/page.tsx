@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { api, type Market } from "@/lib/api";
 import { AIRLINES, airlineOf } from "@/lib/airlines";
 import { AirlineBadge } from "@/components/AirlineBadge";
@@ -37,35 +37,21 @@ export default function Home() {
     () => markets?.filter((m) => m.status === "OPEN" && isTopCarrier(m)) ?? [],
     [markets],
   );
-  const locked = markets?.filter((m) => m.status === "LOCKED" && isTopCarrier(m)) ?? [];
 
-  const counts = useMemo(() => {
-    const c = new Map<string, number>();
-    for (const m of open) {
-      const k = airlineOf(m.flightNumber).key;
-      c.set(k, (c.get(k) ?? 0) + 1);
-    }
-    return c;
-  }, [open]);
-
-  // date tabs from the open board (3-day ingest → up to ~4 tabs)
   const byAirline = selected
     ? open.filter((m) => airlineOf(m.flightNumber).key === selected)
-    : open;
+    : [];
+
   const days = useMemo(() => {
-    const seen = new Map<string, { label: string; count: number; first: number }>();
+    const seen = new Map<string, { label: string; count: number }>();
     for (const m of [...byAirline].sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)) {
       const k = dayKey(m.scheduledDeparture);
       const cur = seen.get(k);
       if (cur) cur.count++;
-      else seen.set(k, { label: dayLabel(m.scheduledDeparture), count: 1, first: m.scheduledDeparture });
+      else seen.set(k, { label: dayLabel(m.scheduledDeparture), count: 1 });
     }
     return [...seen.entries()].map(([key, v]) => ({ key, ...v }));
   }, [byAirline]);
-
-  useEffect(() => {
-    if (days.length && (!day || !days.some((d) => d.key === day))) setDay(days[0].key);
-  }, [days, day]);
 
   const searchHits = useMemo(() => {
     if (!q) return [];
@@ -76,8 +62,15 @@ export default function Home() {
   }, [markets, q]);
 
   const shown = q
-    ? byAirline.filter((m) => m.flightNumber.toUpperCase().includes(q))
-    : byAirline.filter((m) => dayKey(m.scheduledDeparture) === day);
+    ? open.filter((m) => m.flightNumber.toUpperCase().includes(q))
+    : selected && day
+      ? byAirline.filter((m) => dayKey(m.scheduledDeparture) === day)
+      : [];
+
+  const pickAirline = (key: string) => {
+    setSelected(key === selected ? null : key);
+    setDay(null);
+  };
 
   const goToExact = () => {
     const exact = (markets ?? []).find((m) => m.flightNumber.toUpperCase() === q) ?? searchHits[0];
@@ -85,7 +78,7 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-7">
       <h1 className="flap text-center text-sm font-bold text-board-amber">
         Predict the landing. Win back your fare.
       </h1>
@@ -130,80 +123,86 @@ export default function Home() {
         )}
       </div>
 
-      <section>
-        <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
-          Pick your airline
-        </h2>
-        <div className="grid grid-cols-5 gap-2">
-          {AIRLINES.map((a) => {
-            const n = counts.get(a.key) ?? 0;
-            const active = selected === a.key;
-            return (
-              <button
-                key={a.key}
-                onClick={() => setSelected(active ? null : a.key)}
-                disabled={n === 0}
-                className={`board-card flex flex-col items-center gap-1 p-2 transition-all disabled:opacity-35 ${
-                  active
-                    ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.2)]"
-                    : "hover:border-board-amber/40"
-                }`}
-              >
-                <AirlineBadge airline={a} size="lg" />
-                <span className="text-[9px] text-board-dim">{n} open</span>
-              </button>
-            );
-          })}
-        </div>
+      {!q && (
+        <section>
+          <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
+            1 · Pick your airline
+          </h2>
+          <div className="grid grid-cols-5 gap-2">
+            {AIRLINES.map((a) => {
+              const active = selected === a.key;
+              return (
+                <button
+                  key={a.key}
+                  onClick={() => pickAirline(a.key)}
+                  className={`board-card overflow-hidden !p-1.5 transition-all ${
+                    active
+                      ? "border-board-amber shadow-[0_0_18px_rgba(251,191,36,0.3)]"
+                      : selected
+                        ? "opacity-40 hover:opacity-80"
+                        : "hover:border-board-amber/50"
+                  }`}
+                  aria-label={a.name}
+                >
+                  <AirlineBadge airline={a} size="fill" />
+                </button>
+              );
+            })}
+          </div>
 
-        {!q && days.length > 0 && (
-          <div className="mt-3 grid grid-cols-3 gap-2">
-            {days.slice(0, 3).map((d) => (
+          <h2 className="flap mb-3 mt-6 border-b border-board-line pb-1 text-xs text-board-amber">
+            2 · Pick your day
+          </h2>
+          <div className={`grid grid-cols-3 gap-2 ${!selected ? "pointer-events-none opacity-30" : ""}`}>
+            {(days.length ? days.slice(0, 3) : [
+              { key: "d1", label: "Today", count: 0 },
+              { key: "d2", label: "Tomorrow", count: 0 },
+              { key: "d3", label: "Day after", count: 0 },
+            ]).map((d) => (
               <button
                 key={d.key}
                 onClick={() => setDay(d.key)}
-                className={`flap rounded-lg border px-2 py-2.5 text-[11px] font-bold transition-all ${
+                disabled={!selected}
+                className={`flap rounded-lg border px-2 py-3 text-[11px] font-bold transition-all ${
                   day === d.key
-                    ? "border-board-amber/70 bg-board-amber/15 text-board-amber"
+                    ? "border-board-amber bg-board-amber/15 text-board-amber"
                     : "border-board-line bg-board-panel text-board-dim hover:border-board-amber/40"
                 }`}
               >
                 {d.label}
-                <span className="mt-0.5 block text-[9px] font-normal normal-case tracking-normal">
-                  {d.count} flights
-                </span>
+                {selected && (
+                  <span className="mt-0.5 block text-[9px] font-normal normal-case tracking-normal">
+                    {d.count} flights
+                  </span>
+                )}
               </button>
             ))}
           </div>
-        )}
-      </section>
 
-      <section>
-        <div className="space-y-3">
-          {shown
+          {!selected && (
+            <p className="mt-4 text-center text-xs text-board-dim">
+              ↑ Pick an airline to see its flights.
+            </p>
+          )}
+          {selected && !day && (
+            <p className="mt-4 text-center text-xs text-board-dim">↑ Now pick a day.</p>
+          )}
+        </section>
+      )}
+
+      {shown.length > 0 && (
+        <section className="space-y-3">
+          {[...shown]
             .sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)
             .map((m) => (
               <MarketCard key={m.id} market={m} />
             ))}
-        </div>
-        {shown.length === 0 && !isLoading && error == null && (
-          <p className="text-center text-xs text-board-dim">
-            No open flights match. New departures hit the board twice a day.
-          </p>
-        )}
-      </section>
-
-      {locked.length > 0 && !q && (
-        <section>
-          <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
-            In the air — locked
-          </h2>
-          <div className="space-y-3">
-            {locked.map((m) => (
-              <MarketCard key={m.id} market={m} />
-            ))}
-          </div>
         </section>
+      )}
+      {selected && day && shown.length === 0 && !isLoading && error == null && (
+        <p className="text-center text-xs text-board-dim">
+          No open flights for that day. New departures hit the board twice a day.
+        </p>
       )}
 
       <div className="text-center">

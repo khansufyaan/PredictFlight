@@ -14,8 +14,11 @@ const statusColor: Record<string, string> = {
   RESOLVED: "text-board-dim",
 };
 
+const GRACE = 15 * 60;
+
 export function MarketCard({ market }: { market: Market }) {
   const airline = airlineOf(market.flightNumber);
+  const deadline = market.scheduledArrival + GRACE;
   return (
     <Link
       href={`/market/${market.id}`}
@@ -35,9 +38,13 @@ export function MarketCard({ market }: { market: Market }) {
       <div className="flap mt-3 text-center text-3xl font-extrabold tracking-[0.2em] text-white">
         {market.origin} <span className="text-board-amber">→</span> {market.destination}
       </div>
-      <div className="mt-1 text-center text-[11px] text-board-dim">
-        {dateShort(market.scheduledDeparture)} · departs {hhmm(market.scheduledDeparture)} · pools $
-        {usdc(market.onTimePool)} / ${usdc(market.latePool)}
+
+      <div className="mt-2 text-center text-sm font-bold text-board-amber">
+        Will it land by {hhmm(deadline)}?
+      </div>
+      <div className="mt-0.5 text-center text-[11px] text-board-dim">
+        {dateShort(market.scheduledDeparture)} · scheduled to arrive {hhmm(market.scheduledArrival)}{" "}
+        + 15 min grace
       </div>
 
       <div className="mt-3">
@@ -46,11 +53,17 @@ export function MarketCard({ market }: { market: Market }) {
       {market.status === "OPEN" && (
         <>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            <span className="btn-green pointer-events-none text-center">
-              On time · ${usdc(market.onTimePool)}
+            <span className="btn-green pointer-events-none flex flex-col items-center !py-1.5 text-center">
+              <span>Yes · on time</span>
+              <span className="text-[9px] font-normal normal-case tracking-normal opacity-80">
+                lands by {hhmm(deadline)} · ${usdc(market.onTimePool)} pool
+              </span>
             </span>
-            <span className="btn-red pointer-events-none text-center">
-              Late · ${usdc(market.latePool)}
+            <span className="btn-red pointer-events-none flex flex-col items-center !py-1.5 text-center">
+              <span>No · late</span>
+              <span className="text-[9px] font-normal normal-case tracking-normal opacity-80">
+                after {hhmm(deadline)} · ${usdc(market.latePool)} pool
+              </span>
             </span>
           </div>
           <div className="mt-3 flex flex-col items-center gap-1.5">

@@ -85,7 +85,7 @@ export default function MarketPage() {
         </div>
       )}
 
-      {m.status === "OPEN" && <DepositForm marketId={m.id} />}
+      {m.status === "OPEN" && <DepositForm marketId={m.id} deadline={m.scheduledArrival + 900} />}
       <ClaimPanel market={m} />
 
       {m.status === "OPEN" && address && (

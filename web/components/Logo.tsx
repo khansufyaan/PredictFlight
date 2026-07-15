@@ -31,8 +31,8 @@ export function Logo({ size = "md" }: { size?: "md" | "lg" }) {
   }, []);
 
   const tile =
-    size === "lg" ? "h-12 w-9 text-2xl rounded-md" : "h-6 w-[18px] text-xs rounded";
-  const suffix = size === "lg" ? "text-lg" : "text-xs";
+    size === "lg" ? "h-16 w-12 text-4xl rounded-lg" : "h-10 w-7 text-xl rounded-md";
+  const suffix = size === "lg" ? "text-2xl" : "text-base";
   return (
     <span className="inline-flex items-end gap-[3px]" aria-label="Jetlag">
       {display.map((ch, i) => (
