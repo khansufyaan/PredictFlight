@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 
 /** Split-flap countdown: every digit sits in a flap tile and flips over when
  *  it changes, like the boarding splash. */
-export function FlipCountdown({ to, doneLabel }: { to: number; doneLabel: string }) {
+export function FlipCountdown({
+  to,
+  doneLabel,
+  size = "lg",
+}: {
+  to: number;
+  doneLabel: string;
+  size?: "sm" | "lg";
+}) {
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   useEffect(() => {
     const t = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
@@ -20,16 +28,17 @@ export function FlipCountdown({ to, doneLabel }: { to: number; doneLabel: string
   const sec = String(s % 60).padStart(2, "0");
   const groups: string[] = d > 0 ? [`${d}d`, h, m, sec] : [h, m, sec];
 
+  const tile =
+    size === "lg" ? "h-10 w-7 rounded-md text-xl" : "h-5 w-3.5 rounded-sm text-[10px]";
+  const colon = size === "lg" ? "px-0.5 text-lg" : "px-px";
+
   return (
     <span className="inline-flex items-center gap-[3px] align-middle" suppressHydrationWarning>
       {groups.map((g, gi) => (
         <span key={gi} className="inline-flex items-center gap-[2px]">
-          {gi > 0 && <span className="px-px text-board-dim">:</span>}
+          {gi > 0 && <span className={`${colon} font-bold text-board-dim`}>:</span>}
           {g.split("").map((ch, i) => (
-            <span
-              key={`${gi}-${i}-${ch}`}
-              className="flap-tile flip-digit h-5 w-3.5 rounded-sm text-[10px]"
-            >
+            <span key={`${gi}-${i}-${ch}`} className={`flap-tile flip-digit ${tile} font-extrabold`}>
               {ch}
             </span>
           ))}

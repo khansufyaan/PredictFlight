@@ -48,7 +48,7 @@ export function Splash() {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-12 bg-[#070a16] px-4">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-12 bg-black px-4">
       <div className="flex items-end gap-2 sm:gap-3">
         {display.map((ch, i) => (
           <span

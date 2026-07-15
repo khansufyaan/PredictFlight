@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         board: {
-          bg: "#0b1020",
+          bg: "#000000",
           panel: "#151d33",
           line: "#28324e",
           amber: "#fbbf24",

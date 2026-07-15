@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, type Market } from "@/lib/api";
 import { AIRLINES, airlineOf } from "@/lib/airlines";
 import { AirlineBadge } from "@/components/AirlineBadge";
@@ -19,12 +19,17 @@ function dayLabel(epochSec: number): string {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
+function dayKey(epochSec: number): string {
+  return new Date(epochSec * 1000).toDateString();
+}
+
 const isTopCarrier = (m: Market) => airlineOf(m.flightNumber).key !== "other";
 
 export default function Home() {
   const router = useRouter();
   const { data: markets, isLoading, error } = useQuery({ queryKey: ["markets"], queryFn: api.markets });
   const [selected, setSelected] = useState<string | null>(null);
+  const [day, setDay] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const q = query.trim().toUpperCase();
 
@@ -43,7 +48,25 @@ export default function Home() {
     return c;
   }, [open]);
 
-  // flight-number search across every market, any status
+  // date tabs from the open board (3-day ingest → up to ~4 tabs)
+  const byAirline = selected
+    ? open.filter((m) => airlineOf(m.flightNumber).key === selected)
+    : open;
+  const days = useMemo(() => {
+    const seen = new Map<string, { label: string; count: number; first: number }>();
+    for (const m of [...byAirline].sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)) {
+      const k = dayKey(m.scheduledDeparture);
+      const cur = seen.get(k);
+      if (cur) cur.count++;
+      else seen.set(k, { label: dayLabel(m.scheduledDeparture), count: 1, first: m.scheduledDeparture });
+    }
+    return [...seen.entries()].map(([key, v]) => ({ key, ...v }));
+  }, [byAirline]);
+
+  useEffect(() => {
+    if (days.length && (!day || !days.some((d) => d.key === day))) setDay(days[0].key);
+  }, [days, day]);
+
   const searchHits = useMemo(() => {
     if (!q) return [];
     return (markets ?? [])
@@ -52,36 +75,20 @@ export default function Home() {
       .slice(0, 5);
   }, [markets, q]);
 
-  const shown = open
-    .filter((m) => !selected || airlineOf(m.flightNumber).key === selected)
-    .filter((m) => !q || m.flightNumber.toUpperCase().includes(q));
-
-  const byDay = useMemo(() => {
-    const g = new Map<string, Market[]>();
-    for (const m of [...shown].sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)) {
-      const label = dayLabel(m.scheduledDeparture);
-      g.set(label, [...(g.get(label) ?? []), m]);
-    }
-    return g;
-  }, [shown]);
+  const shown = q
+    ? byAirline.filter((m) => m.flightNumber.toUpperCase().includes(q))
+    : byAirline.filter((m) => dayKey(m.scheduledDeparture) === day);
 
   const goToExact = () => {
-    const exact =
-      (markets ?? []).find((m) => m.flightNumber.toUpperCase() === q) ?? searchHits[0];
+    const exact = (markets ?? []).find((m) => m.flightNumber.toUpperCase() === q) ?? searchHits[0];
     if (exact) router.push(`/market/${exact.id}`);
   };
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="flap text-sm font-bold text-board-amber">
-          Predict the landing. Win back your fare.
-        </h1>
-        <p className="mt-1 text-xs text-board-dim">
-          Bet USDC on whether flights land <span className="text-board-green">on time</span> or{" "}
-          <span className="text-board-red">late</span> — winners split the losers&apos; pool.
-        </p>
-      </div>
+      <h1 className="flap text-center text-sm font-bold text-board-amber">
+        Predict the landing. Win back your fare.
+      </h1>
 
       <div>
         <div className="board-card flex items-center gap-2 px-3 py-2">
@@ -136,38 +143,55 @@ export default function Home() {
                 key={a.key}
                 onClick={() => setSelected(active ? null : a.key)}
                 disabled={n === 0}
-                className={`board-card flex flex-col items-center gap-1.5 p-2.5 transition-all disabled:opacity-35 ${
+                className={`board-card flex flex-col items-center gap-1 p-2 transition-all disabled:opacity-35 ${
                   active
-                    ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.15)]"
+                    ? "border-board-amber/70 shadow-[0_0_14px_rgba(251,191,36,0.2)]"
                     : "hover:border-board-amber/40"
                 }`}
               >
                 <AirlineBadge airline={a} size="lg" />
-                <span className="text-[9px] font-bold uppercase tracking-wider">{a.name}</span>
                 <span className="text-[9px] text-board-dim">{n} open</span>
               </button>
             );
           })}
         </div>
-      </section>
 
-      {[...byDay.entries()].map(([label, list]) => (
-        <section key={label}>
-          <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
-            {label} — betting open
-          </h2>
-          <div className="space-y-3">
-            {list.map((m) => (
-              <MarketCard key={m.id} market={m} />
+        {!q && days.length > 0 && (
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {days.slice(0, 3).map((d) => (
+              <button
+                key={d.key}
+                onClick={() => setDay(d.key)}
+                className={`flap rounded-lg border px-2 py-2.5 text-[11px] font-bold transition-all ${
+                  day === d.key
+                    ? "border-board-amber/70 bg-board-amber/15 text-board-amber"
+                    : "border-board-line bg-board-panel text-board-dim hover:border-board-amber/40"
+                }`}
+              >
+                {d.label}
+                <span className="mt-0.5 block text-[9px] font-normal normal-case tracking-normal">
+                  {d.count} flights
+                </span>
+              </button>
             ))}
           </div>
-        </section>
-      ))}
-      {shown.length === 0 && !isLoading && error == null && (
-        <p className="text-center text-xs text-board-dim">
-          No open flights match. New departures hit the board twice a day.
-        </p>
-      )}
+        )}
+      </section>
+
+      <section>
+        <div className="space-y-3">
+          {shown
+            .sort((a, b) => a.scheduledDeparture - b.scheduledDeparture)
+            .map((m) => (
+              <MarketCard key={m.id} market={m} />
+            ))}
+        </div>
+        {shown.length === 0 && !isLoading && error == null && (
+          <p className="text-center text-xs text-board-dim">
+            No open flights match. New departures hit the board twice a day.
+          </p>
+        )}
+      </section>
 
       {locked.length > 0 && !q && (
         <section>

@@ -37,8 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/past" className="flap hover:text-board-amber">
                   Landed
                 </Link>
-                <Link href="/leaderboard" className="flap hover:text-board-amber">
-                  Leaders
+                <Link href="/how" className="flap whitespace-nowrap hover:text-board-amber">
+                  <span className="hidden sm:inline">How it works</span>
+                  <span className="sm:hidden">FAQ</span>
                 </Link>
                 <ConnectButton />
               </nav>

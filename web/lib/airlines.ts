@@ -25,6 +25,10 @@ const PREFIXES: Record<string, string> = {
   AS: "alaska", ASA: "alaska",
 };
 
+export function logoUrl(code: string): string {
+  return `https://www.gstatic.com/flights/airline_logos/70px/${code}.png`;
+}
+
 export function airlineOf(flightNumber: string): Airline {
   const m = flightNumber.match(/^[A-Z]+/);
   const key = m ? PREFIXES[m[0]] : undefined;
