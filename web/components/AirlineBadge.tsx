@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Airline } from "@/lib/airlines";
+import { logoUrl, type Airline } from "@/lib/airlines";
 
 /** Self-hosted carrier logo (public/logos) with a brand-color code badge as
  *  fallback. `fill` stretches to its parent square edge-to-edge. */
@@ -19,7 +19,7 @@ export function AirlineBadge({
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={`/logos/${airline.code}.png`}
+        src={logoUrl(airline.code)}
         alt={`${airline.name} logo`}
         className={`${box} shrink-0 bg-white object-contain shadow`}
         onError={() => setBroken(true)}

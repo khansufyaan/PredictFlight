@@ -25,8 +25,11 @@ const PREFIXES: Record<string, string> = {
   AS: "alaska", ASA: "alaska",
 };
 
+/** Curated per-carrier sources (verified visually): kiwi's 128px set except
+ *  Southwest (kiwi's WN is a placeholder; Google's heart mark is correct). */
 export function logoUrl(code: string): string {
-  return `https://www.gstatic.com/flights/airline_logos/70px/${code}.png`;
+  if (code === "WN") return "https://www.gstatic.com/flights/airline_logos/70px/WN.png";
+  return `https://images.kiwi.com/airlines/128/${code}.png`;
 }
 
 export function airlineOf(flightNumber: string): Airline {
