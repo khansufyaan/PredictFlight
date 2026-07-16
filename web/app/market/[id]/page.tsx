@@ -18,7 +18,6 @@ export default function MarketPage() {
   const { id } = useParams<{ id: string }>();
   const { address } = useAccount();
   const [challengeUrl, setChallengeUrl] = useState<string | null>(null);
-  const [challengeSide, setChallengeSide] = useState<"ON_TIME" | "LATE">("ON_TIME");
 
   const { data: m, error } = useQuery({ queryKey: ["market", id], queryFn: () => api.market(id) });
   const { data: pos } = useQuery({
@@ -30,11 +29,24 @@ export default function MarketPage() {
   if (error != null) return <p className="text-sm text-board-red">Market not found (or API down).</p>;
   if (!m) return <p className="text-sm text-board-dim">loading…</p>;
 
+  // Your challenge side is simply the side you're on (or "on time" if you
+  // haven't bet yet) — the friend who opens the link takes the other side.
+  const mySide: "ON_TIME" | "LATE" =
+    pos && BigInt(pos.late) > BigInt(pos.onTime) ? "LATE" : "ON_TIME";
+
   const makeChallenge = async () => {
     if (!address) return;
-    const { code } = await api.createChallenge(m.id, challengeSide, address);
+    const { code } = await api.createChallenge(m.id, mySide, address);
     setChallengeUrl(`${window.location.origin}/challenge/${code}`);
   };
+
+  const tweetHref = challengeUrl
+    ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        `I say ${m.flightNumber} ${m.origin}→${m.destination} lands ${
+          mySide === "ON_TIME" ? "on time" : "late"
+        }. Think I'm wrong? Take the other side:`,
+      )}&url=${encodeURIComponent(challengeUrl)}`
+    : "";
 
   const hasPosition = pos && (BigInt(pos.onTime) > 0n || BigInt(pos.late) > 0n);
 
@@ -106,30 +118,38 @@ export default function MarketPage() {
       {m.status === "OPEN" && address && (
         <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
           <summary className="flap text-board-dim">Challenge a friend</summary>
-          <div className="mt-2 flex gap-2">
-            <button
-              className={`btn-green flex-1 ${challengeSide === "ON_TIME" ? "ring-2 ring-board-green" : "opacity-60"}`}
-              onClick={() => setChallengeSide("ON_TIME")}
-            >
-              Yes
+          <p className="mt-2 text-[11px] text-board-dim">
+            You&apos;re saying <b className={mySide === "ON_TIME" ? "text-board-green" : "text-board-red"}>
+              {mySide === "ON_TIME" ? "it lands on time" : "it'll be late"}
+            </b>{" "}
+            — whoever opens your link takes the other side.
+          </p>
+          {!challengeUrl ? (
+            <button className="btn-amber mt-2 w-full" onClick={makeChallenge}>
+              Create challenge link
             </button>
-            <button
-              className={`btn-red flex-1 ${challengeSide === "LATE" ? "ring-2 ring-board-red" : "opacity-60"}`}
-              onClick={() => setChallengeSide("LATE")}
-            >
-              No
-            </button>
-          </div>
-          <button className="btn-amber mt-2 w-full" onClick={makeChallenge}>
-            Create challenge link
-          </button>
-          {challengeUrl && (
-            <div className="mt-2 break-all rounded bg-board-bg p-2 text-[11px] text-board-amber">
-              {challengeUrl}
-              <button className="ml-2 underline" onClick={() => navigator.clipboard.writeText(challengeUrl)}>
-                copy
-              </button>
-            </div>
+          ) : (
+            <>
+              <div className="mt-2 break-all rounded bg-board-bg p-2 text-[11px] text-board-amber">
+                {challengeUrl}
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  className="btn-amber !text-[11px]"
+                  onClick={() => navigator.clipboard.writeText(challengeUrl)}
+                >
+                  Copy link
+                </button>
+                <a
+                  href={tweetHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn !text-[11px] border border-board-line bg-white/10 text-center text-white hover:bg-white/20"
+                >
+                  Post on 𝕏
+                </a>
+              </div>
+            </>
           )}
         </details>
       )}

@@ -22,6 +22,7 @@ export function DepositForm({
   deadline,
   defaultSide,
   lockSide,
+  minimal,
   challengeCode,
 }: {
   marketId: string;
@@ -30,6 +31,8 @@ export function DepositForm({
   defaultSide?: 0 | 1;
   /** challenge flow: force the taker onto this side */
   lockSide?: boolean;
+  /** the side is fixed and stated above the form — render only amount + one action */
+  minimal?: boolean;
   challengeCode?: string;
 }) {
   const { address } = useAccount();
@@ -141,32 +144,38 @@ export function DepositForm({
         ? "Depositing…"
         : needsApproval && parsed > 0n
           ? `Approve ${amount} USDC`
-          : side === 0
-            ? "Bet yes"
-            : "Bet no";
+          : minimal
+            ? "Accept challenge"
+            : side === 0
+              ? "Bet yes"
+              : "Bet no";
 
   return (
     <div className="board-card p-4">
-      <div className="flap mb-3 text-xs text-board-dim">
-        {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Place your bet"}
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          className={`btn-green ${side === 0 ? "ring-2 ring-board-green" : "opacity-60"}`}
-          onClick={() => !lockSide && setSide(0)}
-          disabled={lockSide && side !== 0}
-        >
-          Yes
-        </button>
-        <button
-          className={`btn-red ${side === 1 ? "ring-2 ring-board-red" : "opacity-60"}`}
-          onClick={() => !lockSide && setSide(1)}
-          disabled={lockSide && side !== 1}
-        >
-          No
-        </button>
-      </div>
-      <div className="mt-3 flex items-center gap-2">
+      {!minimal && (
+        <div className="flap mb-3 text-xs text-board-dim">
+          {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Place your bet"}
+        </div>
+      )}
+      {!minimal && (
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            className={`btn-green ${side === 0 ? "ring-2 ring-board-green" : "opacity-60"}`}
+            onClick={() => !lockSide && setSide(0)}
+            disabled={lockSide && side !== 0}
+          >
+            Yes
+          </button>
+          <button
+            className={`btn-red ${side === 1 ? "ring-2 ring-board-red" : "opacity-60"}`}
+            onClick={() => !lockSide && setSide(1)}
+            disabled={lockSide && side !== 1}
+          >
+            No
+          </button>
+        </div>
+      )}
+      <div className={`${minimal ? "" : "mt-3 "}flex items-center gap-2`}>
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
