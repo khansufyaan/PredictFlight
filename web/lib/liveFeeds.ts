@@ -1,30 +1,34 @@
-/** Curated 24/7 airport live streams (YouTube). Each verified running with
- *  ATC/tower audio. Streams occasionally restart under a new video id — the
- *  UI treats a dead embed as "feed offline", never a broken page. */
+/** Curated 24/7 airport live streams (YouTube), verified running with ATC
+ *  audio. Single-purpose channels are embedded BY CHANNEL — the embed always
+ *  resolves to whatever the channel is live-streaming right now, so it
+ *  survives stream restarts (video ids rot within days; channel ids don't).
+ *  Multi-cam operators (PTZtv) pin a specific long-running video id. */
 
 export interface AirportFeed {
-  /** YouTube video id of the 24/7 stream */
-  videoId: string;
+  /** channel-based embed: always the channel's current live stream */
+  channelId?: string;
+  /** fixed-stream embed, for operators that run many unrelated cams */
+  videoId?: string;
   /** what the camera shows */
   label: string;
-  /** stream operator, shown as credit */
+  /** stream operator, credited as plain text */
   credit: string;
 }
 
 export const LIVE_FEEDS: Record<string, AirportFeed> = {
   LAX: {
-    videoId: "n4I0d44oBEs",
-    label: "Runways 24L & 24R · live ATC",
+    channelId: "UCox5yCEEjk4iYbhLgyj90EQ", // AirlineVideosLive+ — dedicated 24/7 LAX cams
+    label: "runway cams · live ATC",
     credit: "AirlineVideosLive+",
   },
   LAS: {
-    videoId: "3a4dRftiJ9Y",
-    label: "Runways 26L & 26R · live ATC",
+    channelId: "UCYDCnc3YBEqxfuhvQ4rxqSA", // LAS Vegas Airport LIVE — dedicated 24/7 feed
+    label: "runways 26L & 26R · live ATC",
     credit: "LAS Vegas Airport LIVE",
   },
   MIA: {
-    videoId: "_GUsXnlVJmo",
-    label: "Runway 9/27 · tower radio",
+    videoId: "_GUsXnlVJmo", // PTZtv's long-running MIA cam (channel runs many other cams)
+    label: "runway 9/27 · tower radio",
     credit: "PTZtv",
   },
 };
@@ -33,10 +37,14 @@ export function feedFor(airport: string): AirportFeed | null {
   return LIVE_FEEDS[airport] ?? null;
 }
 
-export function embedUrl(videoId: string): string {
-  return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0`;
-}
-
-export function watchUrl(videoId: string): string {
-  return `https://www.youtube.com/watch?v=${videoId}`;
+/** Chromeless ambient embed: muted autoplay, no controls, no keyboard, no
+ *  fullscreen, no suggestions. Interaction is disabled at the DOM layer too
+ *  (pointer-events) — this is a window, not a video player. */
+export function embedUrl(feed: AirportFeed): string {
+  const params =
+    "autoplay=1&mute=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&rel=0&playsinline=1&modestbranding=1";
+  if (feed.channelId) {
+    return `https://www.youtube-nocookie.com/embed/live_stream?channel=${feed.channelId}&${params}`;
+  }
+  return `https://www.youtube-nocookie.com/embed/${feed.videoId}?${params}`;
 }

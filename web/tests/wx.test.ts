@@ -56,14 +56,18 @@ suite("gcPoints", () => {
 
 suite("liveFeeds", () => {
   it("knows curated airports and ignores the rest", () => {
-    expect(feedFor("LAX")?.videoId).toBeTruthy();
-    expect(feedFor("LAS")?.videoId).toBeTruthy();
+    expect(feedFor("LAX")?.channelId).toBeTruthy();
+    expect(feedFor("LAS")?.channelId).toBeTruthy();
     expect(feedFor("MIA")?.videoId).toBeTruthy();
     expect(feedFor("XYZ")).toBeNull();
   });
-  it("builds a privacy-friendly muted embed", () => {
-    const url = embedUrl("abc123");
+  it("channel feeds embed the channel's current live stream", () => {
+    const url = embedUrl({ channelId: "UCabc", label: "", credit: "" });
+    expect(url).toContain("embed/live_stream?channel=UCabc");
+  });
+  it("embeds are chromeless, muted, and privacy-friendly", () => {
+    const url = embedUrl({ videoId: "abc123", label: "", credit: "" });
     expect(url).toContain("youtube-nocookie.com/embed/abc123");
-    expect(url).toContain("mute=1");
+    for (const p of ["mute=1", "controls=0", "disablekb=1", "fs=0"]) expect(url).toContain(p);
   });
 });
