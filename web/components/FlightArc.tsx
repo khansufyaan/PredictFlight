@@ -97,20 +97,20 @@ export function FlightArc({
           ✈️
         </text>
       </svg>
-      <div className="-mt-1 flex items-start justify-between text-center">
+      <div className="-mt-2 flex items-start justify-between text-center">
         <div className="w-20">
-          <div className="flap text-lg font-extrabold text-white">{origin}</div>
-          <div className="text-[11px] text-board-dim">
-            departs <b className="text-board-amber">{hhmm(departure)}</b>
+          <div className="flap text-base font-extrabold leading-tight text-white">{origin}</div>
+          <div className="text-[10px] text-board-dim">
+            dep <b className="text-board-amber">{hhmm(departure)}</b>
           </div>
         </div>
-        <div className="pt-0.5 text-[11px] uppercase tracking-widest text-board-dim">
+        <div className="pt-0.5 text-[10px] uppercase tracking-widest text-board-dim">
           {fmtDuration(total)} {status}
         </div>
         <div className="w-20">
-          <div className="flap text-lg font-extrabold text-white">{destination}</div>
-          <div className="text-[11px] text-board-dim">
-            lands <b className="text-board-green">{hhmm(arrival)}</b>
+          <div className="flap text-base font-extrabold leading-tight text-white">{destination}</div>
+          <div className="text-[10px] text-board-dim">
+            arr <b className="text-board-green">{hhmm(arrival)}</b>
           </div>
         </div>
       </div>

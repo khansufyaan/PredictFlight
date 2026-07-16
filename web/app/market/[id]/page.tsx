@@ -11,9 +11,7 @@ import { Countdown } from "@/components/Countdown";
 import { DepositForm } from "@/components/DepositForm";
 import { FlightArc } from "@/components/FlightArc";
 import { OddsBar } from "@/components/OddsBar";
-import { OddsChart } from "@/components/OddsChart";
 import { OnTimeHint } from "@/components/OnTimeHint";
-import { estimateOnTimeProb } from "@/lib/predict";
 import { WeatherChip } from "@/components/WeatherChip";
 
 export default function MarketPage() {
@@ -38,14 +36,17 @@ export default function MarketPage() {
     setChallengeUrl(`${window.location.origin}/challenge/${code}`);
   };
 
+  const hasPosition = pos && (BigInt(pos.onTime) > 0n || BigInt(pos.late) > 0n);
+
   return (
-    <div className="space-y-4">
-      <div className="board-card p-4">
-        <div className="flex items-baseline justify-between">
-          <span className="flap text-2xl font-bold text-board-amber">{m.flightNumber}</span>
-          <span className="flap text-xs text-board-dim">{dateShort(m.scheduledDeparture)}</span>
+    <div className="mx-auto flex max-w-md flex-col gap-2.5">
+      {/* flight + route + status — everything you need to read the bet */}
+      <div className="board-card p-3">
+        <div className="flex items-center justify-between text-xs">
+          <span className="flap text-xl font-bold text-board-amber">{m.flightNumber}</span>
+          <span className="flap text-board-dim">{dateShort(m.scheduledDeparture)}</span>
         </div>
-        <div className="mt-3">
+        <div className="mt-1">
           <FlightArc
             origin={m.origin}
             destination={m.destination}
@@ -53,96 +54,70 @@ export default function MarketPage() {
             arrival={m.scheduledArrival}
           />
         </div>
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
           <OnTimeHint market={m} compact />
           <WeatherChip airport={m.destination} at={m.scheduledArrival} />
         </div>
-        <div className="mt-3">
+        <div className="mt-2.5">
           <OddsBar onTimeProb={m.impliedOnTimeProb} />
         </div>
-        <div className="mt-2 flex justify-between text-[11px] text-board-dim">
-          <span>pool ${usdc(m.onTimePool)} on time</span>
-          <span>${usdc(m.latePool)} late</span>
-        </div>
-        <div className="mt-3 text-center text-xs">
+        <div className="mt-1.5 flex items-center justify-between text-[11px] text-board-dim">
+          <span>pool ${usdc(m.onTimePool)} / ${usdc(m.latePool)}</span>
           {m.status === "OPEN" && (
             <span className="text-board-green">
-              betting closes in <Countdown to={m.scheduledDeparture} doneLabel="now" />
+              closes in <Countdown to={m.scheduledDeparture} doneLabel="now" />
             </span>
           )}
-          {m.status === "LOCKED" && <span className="text-board-amber flap">IN FLIGHT — POOLS LOCKED</span>}
+          {m.status === "LOCKED" && <span className="flap text-board-amber">IN FLIGHT — LOCKED</span>}
           {m.status === "RESOLVED" && (
-            <span className="flap text-board-dim">
-              RESOLVED: <b className={m.outcome === "ON_TIME" ? "text-board-green" : m.outcome === "LATE" ? "text-board-red" : ""}>{m.outcome.replace("_", " ")}</b>
-              {m.actualTouchdown && m.outcome !== "VOID"
-                ? ` · touched down ${Math.round((m.actualTouchdown - m.scheduledArrival) / 60)}min ${m.actualTouchdown > m.scheduledArrival ? "after" : "before"} schedule`
-                : ""}
+            <span className="flap">
+              <b
+                className={
+                  m.outcome === "ON_TIME"
+                    ? "text-board-green"
+                    : m.outcome === "LATE"
+                      ? "text-board-red"
+                      : "text-board-dim"
+                }
+              >
+                {m.outcome.replace("_", " ")}
+              </b>
             </span>
           )}
         </div>
       </div>
 
-      <div className="board-card p-4">
-        <div className="flap mb-2 text-xs text-board-dim">Implied on-time odds</div>
-        {m.oddsHistory.length >= 2 ? (
-          <OddsChart points={m.oddsHistory} />
-        ) : (
-          <div className="py-4 text-center text-xs text-board-dim">
-            No bets yet — the pool opens at 50/50.
-            {m.histOnTimePct != null && m.histSample ? (
-              <span className="mt-1 block">
-                History leans{" "}
-                <b className={m.histOnTimePct >= 0.5 ? "text-board-green" : "text-board-red"}>
-                  {Math.round(m.histOnTimePct * 100)}% on time
-                </b>{" "}
-                — early birds get the best odds.
-              </span>
-            ) : (
-              (() => {
-                const est = estimateOnTimeProb(m.flightNumber, m.scheduledDeparture);
-                return est != null ? (
-                  <span className="mt-1 block">
-                    Jetlag model estimates{" "}
-                    <b className={est >= 0.5 ? "text-board-green" : "text-board-red"}>
-                      {Math.round(est * 100)}% on time
-                    </b>{" "}
-                    — early birds get the best odds.
-                  </span>
-                ) : (
-                  <span className="mt-1 block">Early birds get the best odds.</span>
-                );
-              })()
+      {hasPosition && (
+        <div className="board-card flex items-center justify-between p-2.5 text-xs">
+          <span className="flap text-board-dim">Your bet</span>
+          <span>
+            {BigInt(pos!.onTime) > 0n && (
+              <span className="text-board-green">${usdc(pos!.onTime, 2)} yes </span>
             )}
-          </div>
-        )}
-      </div>
-
-      {address && pos && (BigInt(pos.onTime) > 0n || BigInt(pos.late) > 0n) && (
-        <div className="board-card p-4 text-sm">
-          <div className="flap mb-1 text-xs text-board-dim">Your position</div>
-          {BigInt(pos.onTime) > 0n && <div className="text-board-green">${usdc(pos.onTime, 2)} on ON TIME</div>}
-          {BigInt(pos.late) > 0n && <div className="text-board-red">${usdc(pos.late, 2)} on LATE</div>}
+            {BigInt(pos!.late) > 0n && <span className="text-board-red">${usdc(pos!.late, 2)} no</span>}
+          </span>
         </div>
       )}
 
       {m.status === "OPEN" && <DepositForm marketId={m.id} deadline={m.scheduledArrival + 900} />}
       <ClaimPanel market={m} />
 
+      {/* secondary actions tucked into disclosures so the page stays one screen */}
       {m.status === "OPEN" && address && (
-        <div className="board-card p-4">
-          <div className="flap mb-2 text-xs text-board-dim">Challenge a friend</div>
-          <div className="flex gap-2">
+        <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
+          <summary className="flap text-board-dim">Challenge a friend</summary>
+          <div className="mt-2 flex gap-2">
             <button
               className={`btn-green flex-1 ${challengeSide === "ON_TIME" ? "ring-2 ring-board-green" : "opacity-60"}`}
               onClick={() => setChallengeSide("ON_TIME")}
             >
-              I say on time
+              Yes
             </button>
             <button
               className={`btn-red flex-1 ${challengeSide === "LATE" ? "ring-2 ring-board-red" : "opacity-60"}`}
               onClick={() => setChallengeSide("LATE")}
             >
-              I say late
+              No
             </button>
           </div>
           <button className="btn-amber mt-2 w-full" onClick={makeChallenge}>
@@ -151,32 +126,34 @@ export default function MarketPage() {
           {challengeUrl && (
             <div className="mt-2 break-all rounded bg-board-bg p-2 text-[11px] text-board-amber">
               {challengeUrl}
-              <button
-                className="ml-2 underline"
-                onClick={() => navigator.clipboard.writeText(challengeUrl)}
-              >
+              <button className="ml-2 underline" onClick={() => navigator.clipboard.writeText(challengeUrl)}>
                 copy
               </button>
             </div>
           )}
-        </div>
+        </details>
       )}
 
       {m.matchups.length > 0 && (
-        <div className="board-card p-4">
-          <div className="flap mb-2 text-xs text-board-dim">Head-to-head matchups</div>
-          {m.matchups.map((h) => (
-            <div key={h.code} className="flex items-center justify-between border-b border-board-line py-1 text-xs last:border-0">
-              <span className={h.side === "ON_TIME" ? "text-board-green" : "text-board-red"}>
-                {shortAddr(h.creator)}
-              </span>
-              <span className="flap text-[9px] text-board-dim">VS</span>
-              <span className={h.side === "ON_TIME" ? "text-board-red" : "text-board-green"}>
-                {h.acceptor ? shortAddr(h.acceptor) : "—"}
-              </span>
-            </div>
-          ))}
-        </div>
+        <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
+          <summary className="flap text-board-dim">Head-to-head ({m.matchups.length})</summary>
+          <div className="mt-2">
+            {m.matchups.map((h) => (
+              <div
+                key={h.code}
+                className="flex items-center justify-between border-b border-board-line py-1 last:border-0"
+              >
+                <span className={h.side === "ON_TIME" ? "text-board-green" : "text-board-red"}>
+                  {shortAddr(h.creator)}
+                </span>
+                <span className="flap text-[9px] text-board-dim">VS</span>
+                <span className={h.side === "ON_TIME" ? "text-board-red" : "text-board-green"}>
+                  {h.acceptor ? shortAddr(h.acceptor) : "—"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
     </div>
   );
