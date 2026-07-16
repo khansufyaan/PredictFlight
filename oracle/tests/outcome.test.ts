@@ -53,3 +53,12 @@ describe("settlement rulebook", () => {
     expect(decide("landed", undefined)).toEqual({ action: "wait" });
   });
 });
+
+describe("feeds: parseLiveVideoId", async () => {
+  const { parseLiveVideoId } = await import("../src/feeds.js");
+  it("extracts the id only when the page says it is live", () => {
+    expect(parseLiveVideoId('{"videoId":"tBz_zW5c-CY","isLive":true}')).toBe("tBz_zW5c-CY");
+    expect(parseLiveVideoId('{"videoId":"tBz_zW5c-CY"}')).toBeNull();
+    expect(parseLiveVideoId("")).toBeNull();
+  });
+});

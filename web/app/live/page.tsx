@@ -7,7 +7,7 @@ import { airlineOf } from "@/lib/airlines";
 import { AirlineBadge } from "@/components/AirlineBadge";
 import { Countdown } from "@/components/Countdown";
 import { LiveFeed } from "@/components/LiveFeed";
-import { LIVE_FEEDS } from "@/lib/liveFeeds";
+import { CAMS } from "@/lib/liveFeeds";
 import { hhmm, usdc } from "@/lib/format";
 
 /* The pump.fun lesson: the stream and the market belong on the same screen.
@@ -54,7 +54,7 @@ export default function LivePage() {
     .filter((m) => m.status === "OPEN")
     .sort((a, b) => a.scheduledDeparture - b.scheduledDeparture);
 
-  const camAirports = Object.keys(LIVE_FEEDS)
+  const camAirports = Object.keys(CAMS)
     .map((code) => {
       const landing = inAir.filter((m) => m.destination === code);
       const departing = open.filter((m) => m.origin === code).slice(0, 3);
@@ -63,7 +63,7 @@ export default function LivePage() {
     })
     .sort((a, b) => (b.money > a.money ? 1 : b.money < a.money ? -1 : b.landing.length - a.landing.length));
 
-  const elsewhere = inAir.filter((m) => !LIVE_FEEDS[m.destination]);
+  const elsewhere = inAir.filter((m) => !CAMS[m.destination]);
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">

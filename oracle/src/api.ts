@@ -3,6 +3,7 @@ import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest }
 import cors from "@fastify/cors";
 import { computeMetrics, computeStatus } from "./admin.js";
 import { config, OUTCOME, type OutcomeName } from "./config.js";
+import { currentFeeds } from "./feeds.js";
 import { db } from "./db.js";
 import { computeLeaderboard } from "./leaderboard.js";
 import { resolveOnChain } from "./settlement.js";
@@ -44,6 +45,13 @@ export async function buildApi(): Promise<FastifyInstance> {
   });
 
   app.get("/health", async () => ({ ok: true, provider: config.provider }));
+
+  // current live video id per cam airport (stream ids rotate; we re-resolve
+  // server-side). Long shared cache: it changes every few days at most.
+  app.get("/feeds", async (_req, reply) => {
+    reply.header("cache-control", "public, s-maxage=300, stale-while-revalidate=3600");
+    return currentFeeds();
+  });
 
   app.get("/markets", async (req) => {
     const { status } = req.query as { status?: string };

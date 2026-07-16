@@ -1,6 +1,6 @@
 import { describe as suite, expect, it } from "vitest";
 import { AIRPORTS } from "../lib/airports";
-import { embedUrl, feedFor } from "../lib/liveFeeds";
+import { CAMS, feedFor } from "../lib/liveFeeds";
 import { describe, gcPoints, severity } from "../lib/wx";
 
 suite("severity", () => {
@@ -55,19 +55,12 @@ suite("gcPoints", () => {
 });
 
 suite("liveFeeds", () => {
-  it("knows curated airports and ignores the rest", () => {
-    expect(feedFor("LAX")?.channelId).toBeTruthy();
-    expect(feedFor("LAS")?.channelId).toBeTruthy();
-    expect(feedFor("MIA")?.videoId).toBeTruthy();
+  it("knows curated cam airports and ignores the rest", () => {
+    for (const code of ["LAX", "LAS", "MIA"]) {
+      expect(CAMS[code]).toBeTruthy();
+      expect(feedFor(code)?.fallback).toMatch(/^[A-Za-z0-9_-]{11}$/);
+      expect(feedFor(code)?.credit).toBeTruthy();
+    }
     expect(feedFor("XYZ")).toBeNull();
-  });
-  it("channel feeds embed the channel's current live stream", () => {
-    const url = embedUrl({ channelId: "UCabc", label: "", credit: "" });
-    expect(url).toContain("embed/live_stream?channel=UCabc");
-  });
-  it("embeds are chromeless, muted, and privacy-friendly", () => {
-    const url = embedUrl({ videoId: "abc123", label: "", credit: "" });
-    expect(url).toContain("youtube-nocookie.com/embed/abc123");
-    for (const p of ["mute=1", "controls=0", "disablekb=1", "fs=0"]) expect(url).toContain(p);
   });
 });
