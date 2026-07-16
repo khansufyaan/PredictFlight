@@ -71,7 +71,7 @@ export default function MyBetsPage() {
 
   return (
     <div className="space-y-7">
-      <h1 className="flap text-sm font-bold text-board-amber">My predictions</h1>
+      <h1 className="flap text-2xl font-extrabold text-board-amber">My predictions</h1>
 
       <section>
         <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">

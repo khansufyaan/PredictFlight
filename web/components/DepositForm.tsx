@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrivy } from "@privy-io/react-auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { parseUnits } from "viem";
@@ -36,6 +37,7 @@ export function DepositForm({
   challengeCode?: string;
 }) {
   const { address } = useAccount();
+  const { login } = usePrivy();
   const queryClient = useQueryClient();
   const [side, setSide] = useState<0 | 1>(defaultSide ?? 0);
   const [amount, setAmount] = useState("25");
@@ -105,7 +107,11 @@ export function DepositForm({
 
   const submit = () => {
     setError(null);
-    if (!address || parsed === 0n) return;
+    if (!address) {
+      login(); // the big button is the invitation — no dead "connect first" state
+      return;
+    }
+    if (parsed === 0n) return;
     if (balance !== undefined && parsed > balance) {
       setError("insufficient USDC balance");
       return;
@@ -137,7 +143,7 @@ export function DepositForm({
 
   const busy = isPending || step !== "idle";
   const label = !address
-    ? "Connect wallet first"
+    ? "Sign in to predict"
     : step === "approving"
       ? "Approving USDC…"
       : step === "depositing"
@@ -153,21 +159,21 @@ export function DepositForm({
   return (
     <div className="board-card p-4">
       {!minimal && (
-        <div className="flap mb-3 text-xs text-board-dim">
+        <div className="mb-4 text-center text-lg text-white">
           {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Make your prediction"}
         </div>
       )}
       {!minimal && (
         <div className="grid grid-cols-2 gap-2">
           <button
-            className={`btn-green ${side === 0 ? "ring-2 ring-board-green" : "opacity-60"}`}
+            className={`btn-green !py-3 !text-lg !normal-case !tracking-normal ${side === 0 ? "ring-2 ring-board-green" : "opacity-50"}`}
             onClick={() => !lockSide && setSide(0)}
             disabled={lockSide && side !== 0}
           >
             Yes
           </button>
           <button
-            className={`btn-red ${side === 1 ? "ring-2 ring-board-red" : "opacity-60"}`}
+            className={`btn-red !py-3 !text-lg !normal-case !tracking-normal ${side === 1 ? "ring-2 ring-board-red" : "opacity-50"}`}
             onClick={() => !lockSide && setSide(1)}
             disabled={lockSide && side !== 1}
           >
@@ -180,30 +186,34 @@ export function DepositForm({
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
           inputMode="decimal"
-          className="w-full rounded border border-board-line bg-board-bg px-3 py-2 text-right text-lg"
+          className="w-full rounded-lg border border-board-line bg-board-bg px-4 py-3 text-right text-2xl"
         />
         <span className="text-sm text-board-dim">USDC</span>
       </div>
       {balance !== undefined && (
-        <div className="mt-1 text-right text-[10px] text-board-dim">
+        <div className="mt-1 text-right text-xs text-board-dim">
           balance ${fmtUsdc(balance, 2)}
         </div>
       )}
-      <button className="btn-amber mt-3 w-full" onClick={submit} disabled={busy || !address || parsed === 0n}>
+      <button
+        className="btn-amber mt-3 w-full !py-3.5 !text-base !normal-case !tracking-normal"
+        onClick={submit}
+        disabled={busy || (!!address && parsed === 0n)}
+      >
         {label}
       </button>
       {needsApproval && parsed > 0n && !busy && address && (
-        <div className="mt-2 text-center text-[10px] text-board-dim">
+        <div className="mt-2 text-center text-xs text-board-dim">
           step 1 of 2 — approve, then deposit
         </div>
       )}
-      {error && <div className="mt-2 text-center text-[11px] text-board-red">{error}</div>}
+      {error && <div className="mt-2 text-center text-xs text-board-red">{error}</div>}
       {address && balance === 0n && (
         <a
           href="https://www.coinbase.com/how-to-buy/usdc"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 block text-center text-[11px] text-board-sky underline"
+          className="mt-2 block text-center text-xs text-board-sky underline"
         >
           No USDC yet? Buy with a card on Coinbase (choose Base network) ↗
         </a>

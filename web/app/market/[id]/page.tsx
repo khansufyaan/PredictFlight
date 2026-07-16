@@ -57,14 +57,15 @@ export default function MarketPage() {
     : "";
 
   const hasPosition = pos && (BigInt(pos.onTime) > 0n || BigInt(pos.late) > 0n);
+  const hasPool = BigInt(m.onTimePool) + BigInt(m.latePool) > 0n;
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-2.5">
-      {/* flight + route + status — everything you need to read the market */}
-      <div className="board-card p-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flap text-xl font-bold text-board-amber">{m.flightNumber}</span>
-          <span className="flap text-board-dim">{dateShort(m.scheduledDeparture)}</span>
+      {/* flight + route + the one number that matters */}
+      <div className="board-card p-4">
+        <div className="flex items-baseline justify-between">
+          <span className="flap text-2xl font-bold text-board-amber">{m.flightNumber}</span>
+          <span className="flap text-xs text-board-dim">{dateShort(m.scheduledDeparture)}</span>
         </div>
         <div className="mt-1">
           <FlightArc
@@ -74,42 +75,53 @@ export default function MarketPage() {
             arrival={m.scheduledArrival}
           />
         </div>
-        <div className="mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-          <OnTimeHint market={m} compact />
+        <div className="mt-4">
+          <OnTimeHint market={m} hero />
+        </div>
+        <div className="mt-2 flex justify-center">
           <WeatherChip airport={m.destination} at={m.scheduledArrival} />
         </div>
-        <div className="mt-2.5">
-          <OddsBar onTimeProb={m.impliedOnTimeProb} />
-        </div>
-        <div className="mt-1.5 flex items-center justify-between text-[11px] text-board-dim">
-          <span>pool ${usdc(m.onTimePool)} / ${usdc(m.latePool)}</span>
+        {hasPool && (
+          <div className="mt-4">
+            <OddsBar onTimeProb={m.impliedOnTimeProb} />
+            <div className="mt-1.5 text-center text-xs text-board-dim">
+              ${usdc(m.onTimePool)} on time · ${usdc(m.latePool)} late
+            </div>
+          </div>
+        )}
+        <div className="mt-3 text-center text-sm">
           {m.status === "OPEN" && (
-            <span className="text-board-green">
-              closes in <Countdown to={m.scheduledDeparture} doneLabel="now" />
-            </span>
-          )}
-          {m.status === "LOCKED" && <span className="flap text-board-amber">IN FLIGHT — LOCKED</span>}
-          {m.status === "RESOLVED" && (
-            <span className="flap">
-              <b
-                className={
-                  m.outcome === "ON_TIME"
-                    ? "text-board-green"
-                    : m.outcome === "LATE"
-                      ? "text-board-red"
-                      : "text-board-dim"
-                }
-              >
-                {m.outcome.replace("_", " ")}
+            <span className="text-board-dim">
+              closes in{" "}
+              <b className="text-board-green">
+                <Countdown to={m.scheduledDeparture} doneLabel="now" />
               </b>
             </span>
+          )}
+          {m.status === "LOCKED" && <span className="text-board-amber">In flight — predictions locked</span>}
+          {m.status === "RESOLVED" && (
+            <b
+              className={
+                m.outcome === "ON_TIME"
+                  ? "text-board-green"
+                  : m.outcome === "LATE"
+                    ? "text-board-red"
+                    : "text-board-dim"
+              }
+            >
+              {m.outcome === "ON_TIME"
+                ? "Landed on time"
+                : m.outcome === "LATE"
+                  ? "Landed late"
+                  : "Voided — refunds open"}
+            </b>
           )}
         </div>
       </div>
 
       {hasPosition && (
-        <div className="board-card flex items-center justify-between p-2.5 text-xs">
-          <span className="flap text-board-dim">Your prediction</span>
+        <div className="board-card flex items-center justify-between p-3 text-sm">
+          <span className="text-board-dim">Your prediction</span>
           <span>
             {BigInt(pos!.onTime) > 0n && (
               <span className="text-board-green">${usdc(pos!.onTime, 2)} yes </span>
@@ -124,9 +136,9 @@ export default function MarketPage() {
 
       {/* secondary actions tucked into disclosures so the page stays one screen */}
       {m.status === "OPEN" && (
-        <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
-          <summary className="flap text-board-dim">Challenge a friend</summary>
-          <p className="mt-2 text-[11px] text-board-dim">
+        <details className="board-card p-4 text-sm [&_summary]:cursor-pointer">
+          <summary className="text-board-dim">Challenge a friend</summary>
+          <p className="mt-2 text-xs text-board-dim">
             You&apos;re saying <b className={mySide === "ON_TIME" ? "text-board-green" : "text-board-red"}>
               {mySide === "ON_TIME" ? "it lands on time" : "it'll be late"}
             </b>{" "}
@@ -177,8 +189,8 @@ export default function MarketPage() {
       )}
 
       {m.matchups.length > 0 && (
-        <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
-          <summary className="flap text-board-dim">Head-to-head ({m.matchups.length})</summary>
+        <details className="board-card p-4 text-sm [&_summary]:cursor-pointer">
+          <summary className="text-board-dim">Head-to-head ({m.matchups.length})</summary>
           <div className="mt-2">
             {m.matchups.map((h) => (
               <div

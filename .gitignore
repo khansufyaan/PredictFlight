@@ -12,3 +12,4 @@ oracle/*.db
 web/.next/
 web/out/
 .DS_Store
+*.tsbuildinfo

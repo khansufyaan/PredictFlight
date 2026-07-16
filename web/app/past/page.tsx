@@ -20,11 +20,7 @@ export default function PastPage() {
 
   return (
     <div>
-      <h1 className="flap mb-1 text-sm font-bold text-board-amber">Landed — past flights</h1>
-      <p className="mb-4 text-xs text-board-dim">
-        Every result links to third-party flight tracking and the on-chain settlement transaction,
-        so you can verify it yourself.
-      </p>
+      <h1 className="flap mb-4 text-2xl font-extrabold text-board-amber">Past flights</h1>
       <div className="space-y-3">
         {resolved.map((m) => {
           const airline = airlineOf(m.flightNumber);

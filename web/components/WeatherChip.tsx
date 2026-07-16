@@ -60,11 +60,11 @@ export function WeatherChip({ airport, at }: { airport: string; at: number }) {
   const { icon, label } = describe(data.code);
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-md border border-board-line bg-board-bg px-2 py-1 text-[11px] text-board-dim"
+      className="inline-flex items-center gap-1.5 text-xs text-board-dim"
       title={`open-meteo forecast for ${spot.city} at scheduled arrival`}
     >
-      <span className="text-sm leading-none">{icon}</span>
-      {airport} on arrival: {label} · {data.temp}°F
+      <span className="text-base leading-none">{icon}</span>
+      {label} · {data.temp}° in {airport} on arrival
       {data.rain != null && data.rain > 10 && <> · {data.rain}% rain</>}
       {data.wind >= 20 && <> · wind {data.wind}mph</>}
     </span>

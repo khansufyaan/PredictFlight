@@ -56,7 +56,7 @@ export function FlightArc({
   const p = bez(progress);
   const landed = now >= arrival;
   const inFlight = now >= departure && now < arrival;
-  const status = landed ? "landed" : inFlight ? "in the air" : "in the air";
+  const status = landed ? " · landed" : inFlight ? " · in the air" : "";
 
   return (
     <div className="select-none">
@@ -98,20 +98,17 @@ export function FlightArc({
         </text>
       </svg>
       <div className="-mt-2 flex items-start justify-between text-center">
-        <div className="w-20">
-          <div className="flap text-base font-extrabold leading-tight text-white">{origin}</div>
-          <div className="text-[10px] text-board-dim">
-            dep <b className="text-board-amber">{hhmm(departure)}</b>
-          </div>
+        <div className="w-24">
+          <div className="flap text-2xl font-extrabold leading-tight text-white">{origin}</div>
+          <div className="mt-0.5 text-sm text-board-amber">{hhmm(departure)}</div>
         </div>
-        <div className="pt-0.5 text-[10px] uppercase tracking-widest text-board-dim">
-          {fmtDuration(total)} {status}
+        <div className="pt-1.5 text-[11px] uppercase tracking-widest text-board-dim">
+          {fmtDuration(total)}
+          {status}
         </div>
-        <div className="w-20">
-          <div className="flap text-base font-extrabold leading-tight text-white">{destination}</div>
-          <div className="text-[10px] text-board-dim">
-            arr <b className="text-board-green">{hhmm(arrival)}</b>
-          </div>
+        <div className="w-24">
+          <div className="flap text-2xl font-extrabold leading-tight text-white">{destination}</div>
+          <div className="mt-0.5 text-sm text-board-green">{hhmm(arrival)}</div>
         </div>
       </div>
     </div>

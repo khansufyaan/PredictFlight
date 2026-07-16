@@ -21,9 +21,7 @@ export function EstimateBadge({
     return (
       <div className="text-center" title={reason}>
         <div className={`text-5xl font-extrabold tracking-tight ${color}`}>{pctOnTime}%</div>
-        <div className="mt-1 text-[10px] uppercase tracking-widest text-board-dim">
-          chance it lands on time · Jetlag model
-        </div>
+        <div className="mt-1.5 text-xs text-board-dim">chance it lands on time</div>
       </div>
     );
   }

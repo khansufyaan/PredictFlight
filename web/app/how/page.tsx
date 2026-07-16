@@ -98,10 +98,7 @@ export default function HowPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
       />
-      <h1 className="flap mb-1 text-sm font-bold text-board-amber">How it works</h1>
-      <p className="mb-5 text-xs text-board-dim">
-        Late flight? Get paid. Here&apos;s everything in plain words.
-      </p>
+      <h1 className="flap mb-4 text-2xl font-extrabold text-board-amber">How it works</h1>
       <div className="space-y-3">
         {FAQS.map((f, i) => (
           <div key={i} className="board-card p-4">

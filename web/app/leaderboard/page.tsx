@@ -12,7 +12,7 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <h1 className="flap mb-4 text-sm text-board-amber">Leaderboard — ROI on resolved flights</h1>
+      <h1 className="flap mb-4 text-2xl font-extrabold text-board-amber">Leaderboard</h1>
       {!isConnected && (
         <div className="board-card mb-4 flex items-center justify-between p-4 text-xs text-board-dim">
           <span>Connect a wallet to see yourself on the board.</span>

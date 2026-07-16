@@ -24,7 +24,7 @@ export function TrackRecord({
     return (
       <div className="text-center">
         <div className={`text-5xl font-extrabold tracking-tight ${tone}`}>{share}%</div>
-        <div className="mt-1 text-[10px] uppercase tracking-widest text-board-dim">
+        <div className="mt-1.5 text-xs text-board-dim">
           on time over the last {n} flights{delayNote}
         </div>
       </div>
