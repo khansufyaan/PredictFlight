@@ -1,10 +1,21 @@
 import { randomBytes } from "node:crypto";
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
+import { computeMetrics, computeStatus } from "./admin.js";
 import { config, OUTCOME, type OutcomeName } from "./config.js";
 import { db } from "./db.js";
 import { computeLeaderboard } from "./leaderboard.js";
 import { resolveOnChain } from "./settlement.js";
+
+/** Shared guard for operator endpoints: x-admin-secret must match ADMIN_SECRET. */
+function requireAdmin(req: FastifyRequest, reply: FastifyReply): boolean {
+  const secret = req.headers["x-admin-secret"];
+  if (!config.adminSecret || secret !== config.adminSecret) {
+    reply.code(401).send({ error: "unauthorized" });
+    return false;
+  }
+  return true;
+}
 
 const j = (x: unknown) =>
   JSON.parse(JSON.stringify(x, (_k, v) => (typeof v === "bigint" ? v.toString() : v)));
@@ -150,11 +161,22 @@ export async function buildApi(): Promise<FastifyInstance> {
     return j(updated);
   });
 
+  // ---- operator endpoints (never cached, never public) ----
+
+  app.get("/admin/metrics", async (req, reply) => {
+    if (!requireAdmin(req, reply)) return;
+    reply.header("cache-control", "no-store");
+    return computeMetrics();
+  });
+
+  app.get("/admin/status", async (req, reply) => {
+    if (!requireAdmin(req, reply)) return;
+    reply.header("cache-control", "no-store");
+    return computeStatus();
+  });
+
   app.post("/admin/resolve", async (req, reply) => {
-    const secret = req.headers["x-admin-secret"];
-    if (!config.adminSecret || secret !== config.adminSecret) {
-      return reply.code(401).send({ error: "unauthorized" });
-    }
+    if (!requireAdmin(req, reply)) return;
     const { marketId, outcome, actualTouchdown } = (req.body ?? {}) as {
       marketId?: string;
       outcome?: string;
