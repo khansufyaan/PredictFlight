@@ -41,5 +41,3 @@ export function airlineOf(flightNumber: string): Airline {
   const key = m ? PREFIXES[m[0]] : undefined;
   return AIRLINES.find((a) => a.key === key) ?? OTHER;
 }
-
-export const OTHER_AIRLINE = OTHER;

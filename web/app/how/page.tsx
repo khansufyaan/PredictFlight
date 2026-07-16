@@ -1,6 +1,43 @@
 import Link from "next/link";
 
-export const metadata = { title: "How it works — Jetlag" };
+export const metadata = {
+  title: "How it works",
+  description:
+    "How Jetlag flight betting works: pick a real flight, bet USDC on on-time or late, winners split the losers' pool. 2% fee on winnings only, verified results.",
+  alternates: { canonical: "/how" },
+};
+
+/** Plain-text mirror of the FAQ for search engines (FAQPage rich results). */
+const FAQ_JSONLD = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      q: "What is Jetlag?",
+      a: "A game where you bet on whether a real flight lands on time or late. Everyone's bets go into two pools — ON TIME and LATE. When the flight lands, the winning side splits the losing side's money.",
+    },
+    {
+      q: "What counts as on time?",
+      a: "Wheels touching the runway within 15 minutes of the scheduled arrival. Anything later — including diversions — counts as LATE.",
+    },
+    {
+      q: "What if the flight is cancelled?",
+      a: "The market is voided and everyone gets a full refund. No fee, no winners, no losers.",
+    },
+    {
+      q: "What's the fee?",
+      a: "2% of winnings only. Your own stake is never charged and refunds are free.",
+    },
+    {
+      q: "How do I know results are fair?",
+      a: "Every result comes from live flight data and every settlement is a public transaction on Base, so any outcome can be independently verified.",
+    },
+  ].map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
+};
 
 const FAQS: { q: string; a: React.ReactNode }[] = [
   {
@@ -57,6 +94,10 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
 export default function HowPage() {
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSONLD) }}
+      />
       <h1 className="flap mb-1 text-sm font-bold text-board-amber">How it works</h1>
       <p className="mb-5 text-xs text-board-dim">
         Predict the landing. Win back your fare. Here&apos;s everything in plain words.

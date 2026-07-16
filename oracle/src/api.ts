@@ -23,6 +23,15 @@ export async function buildApi(): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   await app.register(cors, { origin: true });
 
+  // Public read endpoints change on a seconds cadence at most. A short shared
+  // cache (CDN / proxy) absorbs polling bursts so the DB sees one query per
+  // window instead of one per client — the cheapest scalability lever we have.
+  app.addHook("onSend", async (req, reply) => {
+    if (req.method === "GET" && !reply.getHeader("cache-control")) {
+      reply.header("cache-control", "public, s-maxage=5, stale-while-revalidate=15");
+    }
+  });
+
   app.get("/health", async () => ({ ok: true, provider: config.provider }));
 
   app.get("/markets", async (req) => {

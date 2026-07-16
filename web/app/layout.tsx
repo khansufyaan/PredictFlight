@@ -10,15 +10,38 @@ import { Splash } from "@/components/Splash";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://jetlag.fun"),
-  title: "Jetlag — bet on late flights",
+  title: {
+    default: "Jetlag — bet on late flights",
+    template: "%s | Jetlag",
+  },
   description:
-    "The jet is lagging. Bet USDC on whether flights land on time, winners split the losers' pool. PvP flight prediction markets on Base.",
+    "The jet is lagging. Bet USDC on whether real flights land on time — winners split the losers' pool. Peer-to-peer flight prediction markets with verified results.",
+  keywords: [
+    "flight delay betting",
+    "flight prediction market",
+    "will my flight be late",
+    "bet on flight delays",
+    "on-time flight odds",
+    "parimutuel flight betting",
+    "USDC prediction market",
+  ],
+  applicationName: "Jetlag",
+  alternates: { canonical: "/" },
   openGraph: {
+    type: "website",
     title: "Jetlag — bet on late flights",
-    description: "Bet USDC on whether flights land on time. Challenge your friends. jetlag.fun",
+    description:
+      "Bet USDC on whether flights land on time. Winners split the losers' pool. Challenge your friends.",
     url: "https://jetlag.fun",
     siteName: "Jetlag",
+    locale: "en_US",
   },
+  twitter: {
+    card: "summary",
+    title: "Jetlag — bet on late flights",
+    description: "Predict the landing. Win back your fare. jetlag.fun",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

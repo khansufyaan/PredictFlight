@@ -103,3 +103,12 @@ Decisions made without asking, as instructed. Newest last.
     technology providers, per user request), linked from the global footer.
     Honest mechanics: 2% fee on winnings only, 24h dispute window, VOID
     refunds, public-blockchain permanence, 18+ / jurisdiction burden on user.
+
+21. **Hardening pass** — dead code removed (OddsChart, unused exports/imports);
+    client polling relaxed 5s->15s with 10s staleTime (~3x less oracle load per
+    client); oracle GETs send `s-maxage=5, stale-while-revalidate=15` so a CDN
+    absorbs polling bursts; settlement rulebook extracted to pure
+    `oracle/src/outcome.ts`. Test bed: vitest on web (lib) and oracle
+    (settlement rules) + 17 Foundry tests = 34 green. SEO: robots.ts,
+    sitemap.ts, title template + keywords + OG/Twitter cards, per-route
+    metadata (market pages noindex to protect crawl budget), FAQPage JSON-LD.

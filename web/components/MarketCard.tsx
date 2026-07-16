@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { Market } from "@/lib/api";
 import { airlineOf } from "@/lib/airlines";
-import { dateShort, hhmm, usdc } from "@/lib/format";
+import { hhmm } from "@/lib/format";
 import { AirlineBadge } from "./AirlineBadge";
 import { FlipCountdown } from "./FlipCountdown";
 import { OddsBar } from "./OddsBar";

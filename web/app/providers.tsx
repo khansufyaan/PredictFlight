@@ -18,8 +18,15 @@ const wagmiConfig = createConfig({
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  // 15s poll + 10s staleness: markets change on the block cadence, not every
+  // second — this cuts oracle load ~3x per client vs the old 5s default.
   const [queryClient] = useState(
-    () => new QueryClient({ defaultOptions: { queries: { refetchInterval: 5000 } } }),
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { refetchInterval: 15_000, staleTime: 10_000, retry: 2 },
+        },
+      }),
   );
   return (
     <PrivyProvider

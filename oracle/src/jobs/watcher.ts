@@ -1,5 +1,6 @@
 import { config } from "../config.js";
 import { db } from "../db.js";
+import { decideOutcome } from "../outcome.js";
 import { getProvider } from "../providers/index.js";
 import { resolveOnChain } from "../settlement.js";
 import type { ScheduledFlight } from "../providers/types.js";
@@ -34,26 +35,17 @@ export async function runWatcher(): Promise<void> {
 
     try {
       const status = await provider.getStatus(flight);
+      const decision = decideOutcome(
+        status,
+        m.scheduledArrival,
+        now,
+        config.onTimeThresholdSec,
+        config.manualReviewAfterSec,
+      );
 
-      if (status.phase === "cancelled") {
-        await resolveOnChain(m.id, "VOID", 0);
-        continue;
-      }
-      if (status.phase === "diverted" && status.actualTouchdown) {
-        await resolveOnChain(m.id, "LATE", status.actualTouchdown);
-        continue;
-      }
-      if (status.phase === "landed" && status.actualTouchdown) {
-        const outcome =
-          status.actualTouchdown <= m.scheduledArrival + config.onTimeThresholdSec
-            ? "ON_TIME"
-            : "LATE";
-        await resolveOnChain(m.id, outcome, status.actualTouchdown);
-        continue;
-      }
-
-      // no terminal data yet
-      if (now > m.scheduledArrival + config.manualReviewAfterSec && !m.needsReview) {
+      if (decision.action === "resolve") {
+        await resolveOnChain(m.id, decision.outcome, decision.touchdown);
+      } else if (decision.action === "review" && !m.needsReview) {
         console.warn(`[watcher] ${m.flightKey} has no data 6h past arrival — flagged for review`);
         await db.market.update({ where: { id: m.id }, data: { needsReview: true } });
       }
