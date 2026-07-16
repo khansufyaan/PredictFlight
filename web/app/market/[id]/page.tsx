@@ -11,6 +11,8 @@ import { ClaimPanel } from "@/components/ClaimPanel";
 import { Countdown } from "@/components/Countdown";
 import { DepositForm } from "@/components/DepositForm";
 import { FlightArc } from "@/components/FlightArc";
+import { LiveFeed } from "@/components/LiveFeed";
+import { feedFor } from "@/lib/liveFeeds";
 import { OddsBar } from "@/components/OddsBar";
 import { OnTimeHint } from "@/components/OnTimeHint";
 import { WeatherChip } from "@/components/WeatherChip";
@@ -128,6 +130,21 @@ export default function MarketPage() {
             )}
             {BigInt(pos!.late) > 0n && <span className="text-board-red">${usdc(pos!.late, 2)} no</span>}
           </span>
+        </div>
+      )}
+
+      {/* the payoff moment: watch your prediction land, live */}
+      {m.status === "LOCKED" && feedFor(m.destination) && (
+        <div className="board-card p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <span className="text-sm text-white">
+              <span className="text-board-red">●</span> Watch the landing
+            </span>
+            <span className="text-xs text-board-dim">
+              lands ~<b className="text-board-green">{hhmm(m.scheduledArrival)}</b>
+            </span>
+          </div>
+          <LiveFeed airport={m.destination} />
         </div>
       )}
 

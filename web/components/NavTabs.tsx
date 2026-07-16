@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 const TABS = [
   { href: "/", icon: "✈", label: "Departures", short: "Board" },
-  { href: "/bets", icon: "🎟", label: "Predictions", short: "Predictions" },
+  { href: "/live", icon: "🔴", label: "Live", short: "Live" },
+  { href: "/bets", icon: "🎟", label: "Predictions", short: "Mine" },
   { href: "/past", icon: "🛬", label: "Landed", short: "Landed" },
   { href: "/how", icon: "?", label: "How it works", short: "FAQ" },
 ];
@@ -40,7 +41,7 @@ export function NavTabs() {
 export function MobileTabs() {
   const isActive = useActive();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-board-line bg-black/95 backdrop-blur sm:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-board-line bg-black/95 backdrop-blur sm:hidden">
       {TABS.map((t) => (
         <Link
           key={t.href}

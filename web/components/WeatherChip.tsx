@@ -2,24 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { AIRPORTS } from "@/lib/airports";
-
-const WMO: [number, string, string][] = [
-  [0, "☀️", "clear"],
-  [2, "⛅", "partly cloudy"],
-  [3, "☁️", "overcast"],
-  [48, "🌫", "fog"],
-  [57, "🌦", "drizzle"],
-  [67, "🌧", "rain"],
-  [77, "❄️", "snow"],
-  [82, "🌧", "showers"],
-  [86, "❄️", "snow showers"],
-  [99, "⛈", "thunderstorms"],
-];
-
-function describe(code: number): { icon: string; label: string } {
-  for (const [max, icon, label] of WMO) if (code <= max) return { icon, label };
-  return { icon: "🌡", label: "—" };
-}
+import { describe } from "@/lib/wx";
 
 /** Forecast at the destination airport around the scheduled arrival hour,
  *  from the free open-meteo API. Weather is half the delay story — give the
