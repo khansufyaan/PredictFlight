@@ -18,6 +18,10 @@ export interface Market {
   latePool: string;
   impliedOnTimeProb: number;
   impliedLateProb: number;
+  /** recent track record of this flight number (hint, not odds) */
+  histOnTimePct?: number | null;
+  histSample?: number | null;
+  histAvgDelayMin?: number | null;
 }
 
 export interface OddsPoint {

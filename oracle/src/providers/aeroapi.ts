@@ -1,6 +1,6 @@
 import type { Route } from "../routes20.js";
 import { config } from "../config.js";
-import type { FlightDataProvider, FlightStatus, ScheduledFlight } from "./types.js";
+import type { FlightDataProvider, FlightHistory, FlightStatus, ScheduledFlight } from "./types.js";
 
 const BASE = "https://aeroapi.flightaware.com/aeroapi";
 
@@ -106,5 +106,38 @@ export class AeroApiProvider implements FlightDataProvider {
     }
     const departed = toEpoch(leg.actual_off ?? leg.actual_out);
     return { phase: departed ? "active" : "scheduled" };
+  }
+
+  /** Track record over the last ~9 days of the same flight number: share of
+   *  completed runs that arrived within the 15-min grace, plus mean delay.
+   *  One AeroAPI call per unique ident; cancelled/unflown legs are excluded. */
+  async getHistory(flightNumber: string): Promise<FlightHistory | null> {
+    const end = new Date(Date.now() - 3600_000).toISOString(); // past only
+    const start = new Date(Date.now() - 9 * 86400_000).toISOString();
+    let data: any;
+    try {
+      data = await aeroGet(
+        `/flights/${encodeURIComponent(flightNumber)}?start=${start}&end=${end}&max_pages=1`,
+      );
+    } catch (err) {
+      console.warn(`[aeroapi] history fetch failed for ${flightNumber}:`, err);
+      return null;
+    }
+    const legs: any[] = data.flights ?? [];
+    const delays: number[] = [];
+    for (const leg of legs) {
+      if (leg.cancelled) continue;
+      const sched = toEpoch(leg.scheduled_in ?? leg.scheduled_on);
+      const actual = toEpoch(leg.actual_in ?? leg.actual_on);
+      if (!sched || !actual) continue;
+      delays.push((actual - sched) / 60);
+    }
+    if (delays.length === 0) return null;
+    const onTime = delays.filter((d) => d <= 15).length;
+    return {
+      onTimePct: onTime / delays.length,
+      sample: delays.length,
+      avgDelayMin: Math.round(delays.reduce((a, b) => a + b, 0) / delays.length),
+    };
   }
 }

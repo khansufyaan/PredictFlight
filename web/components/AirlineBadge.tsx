@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { logoUrl, type Airline } from "@/lib/airlines";
+import { localLogoUrl, logoUrl, type Airline } from "@/lib/airlines";
 
-/** Self-hosted carrier logo (public/logos) with a brand-color code badge as
- *  fallback. `fill` stretches to its parent square edge-to-edge. */
+/** Carrier logo with graceful degradation: 300px CDN mark → committed local
+ *  copy → brand-color code badge. `fill` stretches to its parent square. */
 export function AirlineBadge({
   airline,
   size = "sm",
@@ -12,17 +12,18 @@ export function AirlineBadge({
   airline: Airline;
   size?: "sm" | "fill";
 }) {
-  const [broken, setBroken] = useState(false);
-  const box = size === "fill" ? "aspect-square w-full rounded-xl p-2" : "h-7 w-7 rounded-md p-0.5";
+  // 0 = remote CDN, 1 = self-hosted backup, 2 = color badge
+  const [stage, setStage] = useState(0);
+  const box = size === "fill" ? "aspect-square w-full rounded-lg p-1" : "h-7 w-7 rounded-md p-0.5";
 
-  if (!broken && airline.key !== "other") {
+  if (stage < 2 && airline.key !== "other") {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={logoUrl(airline.code)}
+        src={stage === 0 ? logoUrl(airline.code) : localLogoUrl(airline.code)}
         alt={`${airline.name} logo`}
         className={`${box} shrink-0 bg-white object-contain shadow`}
-        onError={() => setBroken(true)}
+        onError={() => setStage(stage + 1)}
       />
     );
   }

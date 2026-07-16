@@ -9,8 +9,11 @@ import { dateShort, hhmm, shortAddr, usdc } from "@/lib/format";
 import { ClaimPanel } from "@/components/ClaimPanel";
 import { Countdown } from "@/components/Countdown";
 import { DepositForm } from "@/components/DepositForm";
+import { FlightArc } from "@/components/FlightArc";
 import { OddsBar } from "@/components/OddsBar";
 import { OddsChart } from "@/components/OddsChart";
+import { TrackRecord } from "@/components/TrackRecord";
+import { WeatherChip } from "@/components/WeatherChip";
 
 export default function MarketPage() {
   const { id } = useParams<{ id: string }>();
@@ -39,13 +42,19 @@ export default function MarketPage() {
       <div className="board-card p-4">
         <div className="flex items-baseline justify-between">
           <span className="flap text-2xl font-bold text-board-amber">{m.flightNumber}</span>
-          <span className="flap">{m.origin} → {m.destination}</span>
+          <span className="flap text-xs text-board-dim">{dateShort(m.scheduledDeparture)}</span>
         </div>
-        <div className="mt-2 grid grid-cols-2 gap-2 text-[11px] text-board-dim">
-          <span>
-            DEP {dateShort(m.scheduledDeparture)} {hhmm(m.scheduledDeparture)}
-          </span>
-          <span className="text-right">ARR {hhmm(m.scheduledArrival)} sched</span>
+        <div className="mt-3">
+          <FlightArc
+            origin={m.origin}
+            destination={m.destination}
+            departure={m.scheduledDeparture}
+            arrival={m.scheduledArrival}
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          <TrackRecord market={m} compact />
+          <WeatherChip airport={m.destination} at={m.scheduledArrival} />
         </div>
         <div className="mt-3">
           <OddsBar onTimeProb={m.impliedOnTimeProb} />
@@ -74,7 +83,24 @@ export default function MarketPage() {
 
       <div className="board-card p-4">
         <div className="flap mb-2 text-xs text-board-dim">Implied on-time odds</div>
-        <OddsChart points={m.oddsHistory} />
+        {m.oddsHistory.length >= 2 ? (
+          <OddsChart points={m.oddsHistory} />
+        ) : (
+          <div className="py-4 text-center text-xs text-board-dim">
+            No bets yet — the pool opens at 50/50.
+            {m.histOnTimePct != null && m.histSample ? (
+              <span className="mt-1 block">
+                History leans{" "}
+                <b className={m.histOnTimePct >= 0.5 ? "text-board-green" : "text-board-red"}>
+                  {Math.round(m.histOnTimePct * 100)}% on time
+                </b>{" "}
+                — early birds get the best odds.
+              </span>
+            ) : (
+              <span className="mt-1 block">Early birds get the best odds.</span>
+            )}
+          </div>
+        )}
       </div>
 
       {address && pos && (BigInt(pos.onTime) > 0n || BigInt(pos.late) > 0n) && (

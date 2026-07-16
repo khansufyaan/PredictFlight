@@ -27,6 +27,16 @@ export interface FlightStatus {
   actualDestination?: string;
 }
 
+/** Recent track record of a flight number — the betting hint shown to users. */
+export interface FlightHistory {
+  /** 0..1 share of recent runs that arrived within the 15-min grace */
+  onTimePct: number;
+  /** how many completed runs the pct is based on */
+  sample: number;
+  /** mean arrival delay in minutes across those runs (negative = early) */
+  avgDelayMin: number;
+}
+
 /**
  * All flight data flows through this interface. Settlement logic depends only
  * on ScheduledFlight/FlightStatus, so new providers (OpenSkyProvider,
@@ -38,4 +48,6 @@ export interface FlightDataProvider {
   listFlights(routes: Route[], dateISO: string): Promise<ScheduledFlight[]>;
   /** Current status of a previously listed flight. */
   getStatus(flight: ScheduledFlight): Promise<FlightStatus>;
+  /** Recent on-time record for a flight number; null when unknown. */
+  getHistory(flightNumber: string): Promise<FlightHistory | null>;
 }

@@ -45,10 +45,10 @@ body {
   @apply absolute inset-x-0 top-1/2 h-px bg-black/70;
 }
 
-/* the last tile is still flipping — the G lags, that's the brand */
+/* the last tile settles a beat late — the G lags, that's the brand.
+   No 3D transform: perspective distortion made the tile look broken. */
 .flap-lag {
-  transform: perspective(80px) rotateX(24deg) translateY(1px);
-  @apply text-board-amber/70;
+  animation: flapflip 0.35s ease-out 0.45s backwards;
 }
 
 /* boarding splash: bigger, bolder, yellow that pops */
@@ -64,7 +64,7 @@ body {
 }
 
 .splash-tile.flap-lag {
-  color: rgba(255, 210, 63, 0.75);
+  animation: flapflip 0.45s ease-out 0.55s backwards;
 }
 
 .splash-tagline {

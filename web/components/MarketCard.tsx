@@ -7,6 +7,7 @@ import { dateShort, hhmm, usdc } from "@/lib/format";
 import { AirlineBadge } from "./AirlineBadge";
 import { FlipCountdown } from "./FlipCountdown";
 import { OddsBar } from "./OddsBar";
+import { TrackRecord } from "./TrackRecord";
 
 const statusColor: Record<string, string> = {
   OPEN: "text-board-green",
@@ -41,6 +42,10 @@ export function MarketCard({ market }: { market: Market }) {
 
       <div className="mt-2 text-center text-sm font-bold text-board-amber">
         Will it land by {hhmm(deadline)}?
+      </div>
+
+      <div className="mt-1.5 text-center">
+        <TrackRecord market={market} compact />
       </div>
 
       <div className="mt-3">

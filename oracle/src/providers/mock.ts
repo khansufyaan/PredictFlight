@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import type { Route } from "../routes20.js";
 import { config } from "../config.js";
-import type { FlightDataProvider, FlightStatus, ScheduledFlight } from "./types.js";
+import type { FlightDataProvider, FlightHistory, FlightStatus, ScheduledFlight } from "./types.js";
 
 function h32(s: string): number {
   return createHash("sha256").update(s).digest().readUInt32BE(0);
@@ -70,5 +70,13 @@ export class MockProvider implements FlightDataProvider {
       return { phase: "diverted", actualTouchdown: touchdown, actualDestination: "ALT" };
     }
     return { phase: "landed", actualTouchdown: touchdown, actualDestination: flight.destination };
+  }
+
+  /** Deterministic fake track record keyed off the flight number. */
+  async getHistory(flightNumber: string): Promise<FlightHistory | null> {
+    const sample = 5 + (h32(flightNumber + "s") % 5); // 5..9 runs
+    const onTimePct = 0.4 + (h32(flightNumber + "p") % 55) / 100; // 0.40..0.94
+    const avgDelayMin = Math.round((1 - onTimePct) * 40) - 2;
+    return { onTimePct: Math.round(onTimePct * 100) / 100, sample, avgDelayMin };
   }
 }

@@ -24,6 +24,10 @@ model Market {
   latePool           BigInt   @default(0)
   createTxHash       String?
   resolveTxHash      String?
+  // recent track record of this flight number (betting hint, not odds)
+  histOnTimePct      Float?
+  histSample         Int?
+  histAvgDelayMin    Int?
   createdAt          DateTime @default(now())
 
   deposits   Deposit[]
