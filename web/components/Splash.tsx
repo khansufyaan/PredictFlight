@@ -66,8 +66,8 @@ export function Splash() {
         className={`text-center transition-opacity duration-700 ${settled ? "opacity-100" : "opacity-0"}`}
       >
         <p className="flap splash-tagline text-lg font-extrabold sm:text-3xl">
-          Predict the landing.
-          <br className="sm:hidden" /> Win back your fare.
+          Late flight?
+          <br className="sm:hidden" /> Get paid.
         </p>
         <button className="btn-amber splash-cta mt-10 px-12 py-4 !text-lg" onClick={board}>
           Board now ✈

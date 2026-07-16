@@ -36,7 +36,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           theme: "dark",
           accentColor: "#fbbf24",
           landingHeader: "Board Jetlag",
-          loginMessage: "Sign in to bet on flights",
+          loginMessage: "Sign in to predict flights",
           walletList: [
             "coinbase_wallet",
             "metamask",

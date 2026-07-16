@@ -4,7 +4,7 @@ export function OddsBar({ onTimeProb }: { onTimeProb: number }) {
   const green = Math.max(2, Math.min(98, onTimeProb * 100));
   return (
     <div>
-      <div className="flex justify-between text-[10px] text-board-dim">
+      <div className="flex justify-between text-xs font-semibold">
         <span className="text-board-green">ON TIME {pct(onTimeProb)}</span>
         <span className="text-board-red">LATE {pct(1 - onTimeProb)}</span>
       </div>

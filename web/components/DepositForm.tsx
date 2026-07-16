@@ -147,14 +147,14 @@ export function DepositForm({
           : minimal
             ? "Accept challenge"
             : side === 0
-              ? "Bet yes"
-              : "Bet no";
+              ? "Predict yes"
+              : "Predict no";
 
   return (
     <div className="board-card p-4">
       {!minimal && (
         <div className="flap mb-3 text-xs text-board-dim">
-          {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Place your bet"}
+          {deadline ? <>Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?</> : "Make your prediction"}
         </div>
       )}
       {!minimal && (

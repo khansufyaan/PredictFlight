@@ -80,7 +80,7 @@ export default function Home() {
   return (
     <div className="space-y-7">
       <h1 className="flap text-center text-sm font-bold text-board-amber">
-        Predict the landing. Win back your fare.
+        Late flight? Get paid.
       </h1>
 
       <div>

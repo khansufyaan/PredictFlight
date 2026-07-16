@@ -45,7 +45,7 @@ export default function ChallengePage() {
             .
           </p>
           <p className="text-board-dim">
-            You&apos;re betting it{" "}
+            You&apos;re predicting it{" "}
             <b className={theirs ? "text-board-red" : "text-board-green"}>
               {theirs ? `lands after ${hhmm(deadline)}` : `lands by ${hhmm(deadline)}`}
             </b>
@@ -71,7 +71,7 @@ export default function ChallengePage() {
         </div>
       ) : m.status !== "OPEN" ? (
         <div className="board-card p-5 text-center text-sm text-board-dim">
-          This market is already {m.status.toLowerCase()} — too late to take the bet.
+          This market is already {m.status.toLowerCase()} — too late to take the other side.
         </div>
       ) : (
         <DepositForm

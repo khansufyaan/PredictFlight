@@ -17,7 +17,7 @@ const sections: { h: string; p: string[] }[] = [
   {
     h: "3. How we use information",
     p: [
-      "To operate the platform: matching your positions to markets, showing your bet history, calculating winnings, and letting you claim them. To secure the service: detecting abuse, fraud, and attacks. To improve the product: aggregate, non-identifying analytics about how the site is used. To communicate: only if you contact us or where a service notice is genuinely required.",
+      "To operate the platform: matching your positions to markets, showing your prediction history, calculating winnings, and letting you claim them. To secure the service: detecting abuse, fraud, and attacks. To improve the product: aggregate, non-identifying analytics about how the site is used. To communicate: only if you contact us or where a service notice is genuinely required.",
     ],
   },
   {

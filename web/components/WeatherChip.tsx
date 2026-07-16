@@ -23,7 +23,7 @@ function describe(code: number): { icon: string; label: string } {
 
 /** Forecast at the destination airport around the scheduled arrival hour,
  *  from the free open-meteo API. Weather is half the delay story — give the
- *  bettor the sky they're betting into. */
+ *  predictor the sky they're flying into. */
 export function WeatherChip({ airport, at }: { airport: string; at: number }) {
   const spot = AIRPORTS[airport];
   const { data } = useQuery({

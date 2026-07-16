@@ -48,7 +48,7 @@ export default function LeaderboardPage() {
         ))}
         {rows && rows.length === 0 && (
           <div className="p-6 text-center text-xs text-board-dim">
-            No resolved bets yet. Be the first on the board.
+            No resolved predictions yet. Be the first on the board.
           </div>
         )}
       </div>

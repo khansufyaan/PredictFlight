@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrivy } from "@privy-io/react-auth";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -17,7 +18,9 @@ import { WeatherChip } from "@/components/WeatherChip";
 export default function MarketPage() {
   const { id } = useParams<{ id: string }>();
   const { address } = useAccount();
+  const { login } = usePrivy();
   const [challengeUrl, setChallengeUrl] = useState<string | null>(null);
+  const [sideFlipped, setSideFlipped] = useState(false);
 
   const { data: m, error } = useQuery({ queryKey: ["market", id], queryFn: () => api.market(id) });
   const { data: pos } = useQuery({
@@ -29,10 +32,15 @@ export default function MarketPage() {
   if (error != null) return <p className="text-sm text-board-red">Market not found (or API down).</p>;
   if (!m) return <p className="text-sm text-board-dim">loading…</p>;
 
-  // Your challenge side is simply the side you're on (or "on time" if you
-  // haven't bet yet) — the friend who opens the link takes the other side.
-  const mySide: "ON_TIME" | "LATE" =
+  // Default to the side you're already on (on-time if you have no position);
+  // one tap on "switch" flips it. The friend takes whichever side is left.
+  const baseSide: "ON_TIME" | "LATE" =
     pos && BigInt(pos.late) > BigInt(pos.onTime) ? "LATE" : "ON_TIME";
+  const mySide: "ON_TIME" | "LATE" = sideFlipped
+    ? baseSide === "ON_TIME"
+      ? "LATE"
+      : "ON_TIME"
+    : baseSide;
 
   const makeChallenge = async () => {
     if (!address) return;
@@ -52,7 +60,7 @@ export default function MarketPage() {
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-2.5">
-      {/* flight + route + status — everything you need to read the bet */}
+      {/* flight + route + status — everything you need to read the market */}
       <div className="board-card p-3">
         <div className="flex items-center justify-between text-xs">
           <span className="flap text-xl font-bold text-board-amber">{m.flightNumber}</span>
@@ -101,7 +109,7 @@ export default function MarketPage() {
 
       {hasPosition && (
         <div className="board-card flex items-center justify-between p-2.5 text-xs">
-          <span className="flap text-board-dim">Your bet</span>
+          <span className="flap text-board-dim">Your prediction</span>
           <span>
             {BigInt(pos!.onTime) > 0n && (
               <span className="text-board-green">${usdc(pos!.onTime, 2)} yes </span>
@@ -115,19 +123,33 @@ export default function MarketPage() {
       <ClaimPanel market={m} />
 
       {/* secondary actions tucked into disclosures so the page stays one screen */}
-      {m.status === "OPEN" && address && (
+      {m.status === "OPEN" && (
         <details className="board-card p-3 text-xs [&_summary]:cursor-pointer">
           <summary className="flap text-board-dim">Challenge a friend</summary>
           <p className="mt-2 text-[11px] text-board-dim">
             You&apos;re saying <b className={mySide === "ON_TIME" ? "text-board-green" : "text-board-red"}>
               {mySide === "ON_TIME" ? "it lands on time" : "it'll be late"}
             </b>{" "}
-            — whoever opens your link takes the other side.
+            — whoever opens your link takes the other side.{" "}
+            {!challengeUrl && (
+              <button
+                className="text-board-sky underline"
+                onClick={() => setSideFlipped((f) => !f)}
+              >
+                switch
+              </button>
+            )}
           </p>
           {!challengeUrl ? (
-            <button className="btn-amber mt-2 w-full" onClick={makeChallenge}>
-              Create challenge link
-            </button>
+            address ? (
+              <button className="btn-amber mt-2 w-full" onClick={makeChallenge}>
+                Create challenge link
+              </button>
+            ) : (
+              <button className="btn-amber mt-2 w-full" onClick={login}>
+                Sign in to create your link
+              </button>
+            )
           ) : (
             <>
               <div className="mt-2 break-all rounded bg-board-bg p-2 text-[11px] text-board-amber">

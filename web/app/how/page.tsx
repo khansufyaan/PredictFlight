@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = {
   title: "How it works",
   description:
-    "How Jetlag flight betting works: pick a real flight, bet USDC on on-time or late, winners split the losers' pool. 2% fee on winnings only, verified results.",
+    "How Jetlag works: pick a real flight, predict on-time or late with USDC, winners split the losers' pool. 2% fee on winnings only, verified results.",
   alternates: { canonical: "/how" },
 };
 
@@ -14,7 +14,7 @@ const FAQ_JSONLD = {
   mainEntity: [
     {
       q: "What is Jetlag?",
-      a: "A game where you bet on whether a real flight lands on time or late. Everyone's bets go into two pools — ON TIME and LATE. When the flight lands, the winning side splits the losing side's money.",
+      a: "A game where you predict whether a real flight lands on time or late. Everyone's predictions go into two pools — ON TIME and LATE. When the flight lands, the winning side splits the losing side's money.",
     },
     {
       q: "What counts as on time?",
@@ -42,11 +42,11 @@ const FAQ_JSONLD = {
 const FAQS: { q: string; a: React.ReactNode }[] = [
   {
     q: "What is Jetlag?",
-    a: "A game where you bet on whether a real flight lands on time or late. Everyone's bets go into two pools — ON TIME and LATE. When the flight lands, the winning side splits the losing side's money.",
+    a: "A game where you predict whether a real flight lands on time or late. Everyone's predictions go into two pools — ON TIME and LATE. When the flight lands, the winning side splits the losing side's money.",
   },
   {
-    q: "How do I place a bet?",
-    a: "Pick a flight, choose ON TIME or LATE, enter an amount of USDC, and confirm in your wallet (two taps: approve, then deposit). Betting closes the moment the flight is scheduled to depart.",
+    q: "How do I make a prediction?",
+    a: "Pick a flight, choose ON TIME or LATE, enter an amount of USDC, and confirm in your wallet (two taps: approve, then deposit). Predictions close the moment the flight is scheduled to depart.",
   },
   {
     q: "What counts as \"on time\"?",
@@ -83,7 +83,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "What's the fee?",
-    a: "2% of winnings only. Your own stake is never charged, refunds are free, and if nobody bet against you, you simply get your money back.",
+    a: "2% of winnings only. Your own stake is never charged, refunds are free, and if nobody predicted against you, you simply get your money back.",
   },
   {
     q: "Can I challenge a friend?",
@@ -100,7 +100,7 @@ export default function HowPage() {
       />
       <h1 className="flap mb-1 text-sm font-bold text-board-amber">How it works</h1>
       <p className="mb-5 text-xs text-board-dim">
-        Predict the landing. Win back your fare. Here&apos;s everything in plain words.
+        Late flight? Get paid. Here&apos;s everything in plain words.
       </p>
       <div className="space-y-3">
         {FAQS.map((f, i) => (
@@ -111,7 +111,7 @@ export default function HowPage() {
         ))}
       </div>
       <p className="mt-6 text-center text-[10px] text-board-dim">
-        Bet only what you can afford to lose. Flights are unpredictable — that&apos;s the point.
+        Only stake what you can afford to lose. Flights are unpredictable — that&apos;s the point.
       </p>
     </div>
   );

@@ -10,16 +10,18 @@ import { OddsBar } from "./OddsBar";
 import { OnTimeHint } from "./OnTimeHint";
 
 const statusColor: Record<string, string> = {
-  OPEN: "text-board-green",
   LOCKED: "text-board-amber",
   RESOLVED: "text-board-dim",
 };
 
 const GRACE = 15 * 60;
 
+/** One flight, one question, one number. The on-time chance is the alpha, so
+ *  it gets the headline; everything else stays quiet. */
 export function MarketCard({ market }: { market: Market }) {
   const airline = airlineOf(market.flightNumber);
   const deadline = market.scheduledArrival + GRACE;
+  const hasPool = BigInt(market.onTimePool) + BigInt(market.latePool) > 0n;
   return (
     <Link
       href={`/market/${market.id}`}
@@ -31,35 +33,42 @@ export function MarketCard({ market }: { market: Market }) {
           <AirlineBadge airline={airline} />
           <span className="flap text-base font-bold text-board-amber">{market.flightNumber}</span>
         </span>
-        <span className={`flap text-[10px] ${statusColor[market.status] ?? ""}`}>
-          {market.status === "RESOLVED" ? market.outcome.replace("_", " ") : market.status}
-        </span>
+        {/* OPEN is the default state — only exceptions earn a label */}
+        {market.status !== "OPEN" && (
+          <span className={`flap text-[10px] ${statusColor[market.status] ?? ""}`}>
+            {market.status === "RESOLVED" ? market.outcome.replace("_", " ") : market.status}
+          </span>
+        )}
       </div>
 
       <div className="flap mt-3 text-center text-3xl font-extrabold tracking-[0.2em] text-white">
         {market.origin} <span className="text-board-amber">→</span> {market.destination}
       </div>
 
-      <div className="mt-2 text-center text-sm font-bold text-board-amber">
-        Will it land by {hhmm(deadline)}?
+      <div className="mt-1.5 text-center text-sm text-board-dim">
+        Will it land by <b className="text-board-amber">{hhmm(deadline)}</b>?
       </div>
 
-      <div className="mt-1.5 text-center">
-        <OnTimeHint market={market} compact />
+      <div className="mt-4">
+        <OnTimeHint market={market} hero />
       </div>
 
-      <div className="mt-3">
-        <OddsBar onTimeProb={market.impliedOnTimeProb} />
-      </div>
+      {/* live market odds only once real money disagrees with the model */}
+      {hasPool && (
+        <div className="mt-4">
+          <OddsBar onTimeProb={market.impliedOnTimeProb} />
+        </div>
+      )}
+
       {market.status === "OPEN" && (
         <>
-          <div className="mt-3 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <span className="btn-green pointer-events-none text-center">Yes</span>
             <span className="btn-red pointer-events-none text-center">No</span>
           </div>
           <div className="mt-3 flex flex-col items-center gap-1.5">
             <span className="text-[10px] uppercase tracking-widest text-board-dim">
-              betting closes in
+              predictions close in
             </span>
             <FlipCountdown to={market.scheduledDeparture} doneLabel="moments" />
           </div>

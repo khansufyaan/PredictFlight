@@ -21,7 +21,7 @@ export default function MyBetsPage() {
   if (!isConnected) {
     return (
       <div className="board-card flex flex-col items-center gap-4 p-8 text-center">
-        <p className="text-sm text-board-dim">Connect your wallet to see your bets.</p>
+        <p className="text-sm text-board-dim">Connect your wallet to see your predictions.</p>
         <ConnectButton />
       </div>
     );
@@ -71,7 +71,7 @@ export default function MyBetsPage() {
 
   return (
     <div className="space-y-7">
-      <h1 className="flap text-sm font-bold text-board-amber">My bets</h1>
+      <h1 className="flap text-sm font-bold text-board-amber">My predictions</h1>
 
       <section>
         <h2 className="flap mb-3 border-b border-board-line pb-1 text-xs text-board-amber">
@@ -80,7 +80,7 @@ export default function MyBetsPage() {
         <div className="space-y-3">{active.map(row)}</div>
         {active.length === 0 && (
           <p className="text-center text-xs text-board-dim">
-            No live bets.{" "}
+            No live predictions.{" "}
             <Link href="/" className="text-board-sky underline">
               Pick a flight →
             </Link>

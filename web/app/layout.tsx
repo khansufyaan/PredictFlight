@@ -11,35 +11,35 @@ import { Splash } from "@/components/Splash";
 export const metadata: Metadata = {
   metadataBase: new URL("https://jetlag.fun"),
   title: {
-    default: "Jetlag — bet on late flights",
+    default: "Jetlag — Late flight? Get paid.",
     template: "%s | Jetlag",
   },
   description:
-    "The jet is lagging. Bet USDC on whether real flights land on time — winners split the losers' pool. Peer-to-peer flight prediction markets with verified results.",
+    "Late flight? Get paid. Predict whether real flights land on time — winners split the losers' pool. Peer-to-peer flight prediction markets with verified results.",
   keywords: [
-    "flight delay betting",
+    "flight delay prediction",
     "flight prediction market",
     "will my flight be late",
-    "bet on flight delays",
+    "get paid for flight delays",
     "on-time flight odds",
-    "parimutuel flight betting",
+    "parimutuel flight predictions",
     "USDC prediction market",
   ],
   applicationName: "Jetlag",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
-    title: "Jetlag — bet on late flights",
+    title: "Jetlag — Late flight? Get paid.",
     description:
-      "Bet USDC on whether flights land on time. Winners split the losers' pool. Challenge your friends.",
+      "Predict whether flights land on time. Winners split the losers' pool. Challenge your friends.",
     url: "https://jetlag.fun",
     siteName: "Jetlag",
     locale: "en_US",
   },
   twitter: {
     card: "summary",
-    title: "Jetlag — bet on late flights",
-    description: "Predict the landing. Win back your fare. jetlag.fun",
+    title: "Jetlag — Late flight? Get paid.",
+    description: "When the jet lags, you win. jetlag.fun",
   },
   robots: { index: true, follow: true },
 };
@@ -62,20 +62,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileTabs />
           <Splash />
           <PlaneFly />
-          <footer className="mx-auto max-w-3xl space-y-1.5 px-4 pb-8 text-center text-[10px] text-board-dim">
-            <div>
-              jetlag.fun ✈ the jet is lagging · parimutuel pools · 2% fee on winnings · 24h
-              dispute window before claims
-            </div>
-            <div>
-              <Link href="/terms" className="underline hover:text-board-amber">
-                Terms &amp; Conditions
-              </Link>
-              <span className="mx-2">·</span>
-              <Link href="/privacy" className="underline hover:text-board-amber">
-                Privacy Policy
-              </Link>
-            </div>
+          <footer className="mx-auto max-w-3xl px-4 pb-8 text-center text-[10px] text-board-dim">
+            <Link href="/terms" className="underline hover:text-board-amber">
+              Terms &amp; Conditions
+            </Link>
+            <span className="mx-2">·</span>
+            <Link href="/privacy" className="underline hover:text-board-amber">
+              Privacy Policy
+            </Link>
           </footer>
         </Providers>
       </body>
