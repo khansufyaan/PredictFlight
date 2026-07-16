@@ -25,11 +25,15 @@ const PREFIXES: Record<string, string> = {
   AS: "alaska", ASA: "alaska",
 };
 
-/** Self-hosted 512px square marks (web/public/logos): trimmed to a consistent
- *  square, Alaska's white mark backed with its navy so it reads on a white
- *  tile. Local = crisp, no CDN dependency, no upscaling blur. */
+/** 512px square marks, composited for a consistent crisp look — trimmed square,
+ *  Alaska's white mark backed with its navy so it reads on a white tile. Served
+ *  from the public repo (pinned commit) so they render on any deploy; the same
+ *  files are committed at web/public/logos for same-origin serving once Vercel's
+ *  root directory is set to `web`. */
+const LOGO_BASE =
+  "https://raw.githubusercontent.com/khansufyaan/PredictFlight/c1530dde4ed2162bc114dacaffe2d1478802e5f7/web/public/logos";
 export function logoUrl(code: string): string {
-  return `/logos/${code}.png`;
+  return `${LOGO_BASE}/${code}.png`;
 }
 
 export function airlineOf(flightNumber: string): Airline {
