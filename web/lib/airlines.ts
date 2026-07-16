@@ -25,14 +25,10 @@ const PREFIXES: Record<string, string> = {
   AS: "alaska", ASA: "alaska",
 };
 
-/** Kayak's 300px set — the highest-resolution source that gets all five marks
- *  right (kiwi caps at 128px with a placeholder WN; gstatic's AS is wrong). */
+/** Self-hosted 512px square marks (web/public/logos): trimmed to a consistent
+ *  square, Alaska's white mark backed with its navy so it reads on a white
+ *  tile. Local = crisp, no CDN dependency, no upscaling blur. */
 export function logoUrl(code: string): string {
-  return `https://content.r9cdn.net/rimg/provider-logos/airlines/v/${code}.png?crop=false&width=300&height=300`;
-}
-
-/** Committed backup of the same 300px marks, used if the CDN ever breaks. */
-export function localLogoUrl(code: string): string {
   return `/logos/${code}.png`;
 }
 

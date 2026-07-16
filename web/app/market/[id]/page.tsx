@@ -12,7 +12,8 @@ import { DepositForm } from "@/components/DepositForm";
 import { FlightArc } from "@/components/FlightArc";
 import { OddsBar } from "@/components/OddsBar";
 import { OddsChart } from "@/components/OddsChart";
-import { TrackRecord } from "@/components/TrackRecord";
+import { OnTimeHint } from "@/components/OnTimeHint";
+import { estimateOnTimeProb } from "@/lib/predict";
 import { WeatherChip } from "@/components/WeatherChip";
 
 export default function MarketPage() {
@@ -53,7 +54,7 @@ export default function MarketPage() {
           />
         </div>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          <TrackRecord market={m} compact />
+          <OnTimeHint market={m} compact />
           <WeatherChip airport={m.destination} at={m.scheduledArrival} />
         </div>
         <div className="mt-3">
@@ -97,7 +98,20 @@ export default function MarketPage() {
                 — early birds get the best odds.
               </span>
             ) : (
-              <span className="mt-1 block">Early birds get the best odds.</span>
+              (() => {
+                const est = estimateOnTimeProb(m.flightNumber, m.scheduledDeparture);
+                return est != null ? (
+                  <span className="mt-1 block">
+                    Jetlag model estimates{" "}
+                    <b className={est >= 0.5 ? "text-board-green" : "text-board-red"}>
+                      {Math.round(est * 100)}% on time
+                    </b>{" "}
+                    — early birds get the best odds.
+                  </span>
+                ) : (
+                  <span className="mt-1 block">Early birds get the best odds.</span>
+                );
+              })()
             )}
           </div>
         )}
