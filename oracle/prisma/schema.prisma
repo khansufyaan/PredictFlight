@@ -92,3 +92,15 @@ model IndexerState {
   id        Int @id @default(1)
   lastBlock Int @default(0)
 }
+
+// one row per pageview; vh is a daily-salted anonymous visitor hash so we can
+// count uniques without storing anything identifying
+model Visit {
+  id   Int    @id @default(autoincrement())
+  day  String
+  path String
+  vh   String
+  ts   Int
+
+  @@index([day])
+}

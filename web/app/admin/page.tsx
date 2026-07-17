@@ -16,8 +16,14 @@ interface Bucket {
   volumeUsd: number;
   revenueUsd: number;
 }
+interface TrafficDay {
+  day: string;
+  views: number;
+  visitors: number;
+}
 interface Metrics {
   generatedAt: number;
+  traffic?: TrafficDay[];
   kpis: Record<string, number | null>;
   daily: Bucket[];
   weekly: Bucket[];
@@ -57,6 +63,66 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
       <div className="mt-1 text-xl font-bold text-white">{value}</div>
       {sub && <div className="text-[10px] text-board-dim">{sub}</div>}
     </div>
+  );
+}
+
+/** Rect with only the data-end (top) rounded, anchored flat to the baseline. */
+function barPath(x: number, y: number, w: number, h: number, r: number): string {
+  const rr = Math.min(r, h);
+  return `M ${x} ${y + h} V ${y + rr} Q ${x} ${y} ${x + rr} ${y} H ${x + w - rr} Q ${x + w} ${y} ${x + w} ${y + rr} V ${y + h} Z`;
+}
+
+const mmdd = (day: string) => `${day.slice(5, 7)}/${day.slice(8)}`;
+
+/** Daily unique visitors, last 30 days. One series, one axis; views ride
+ *  along in the tooltip. Bar color #d97706 validated against the panel. */
+function TrafficChart({ rows }: { rows: TrafficDay[] }) {
+  const H = 64;
+  const W = rows.length * 10;
+  const max = Math.max(1, ...rows.map((r) => r.visitors));
+  const peakIdx = rows.reduce((a, r, i) => (r.visitors > rows[a].visitors ? i : a), 0);
+  const hOf = (v: number) => (v > 0 ? Math.max(2, (v / max) * (H - 14)) : 0);
+  if (rows.every((r) => r.visitors === 0)) {
+    return (
+      <p className="py-6 text-center text-[11px] text-board-dim">
+        No traffic recorded yet — the beacon starts counting from today.
+      </p>
+    );
+  }
+  return (
+    <svg viewBox={`0 0 ${W} ${H + 12}`} className="w-full" role="img" aria-label="Daily visitors, last 30 days">
+      <line x1="0" y1={H + 0.5} x2={W} y2={H + 0.5} stroke="#28324e" strokeWidth="1" />
+      {rows.map((r, i) => {
+        const h = hOf(r.visitors);
+        return (
+          <path
+            key={r.day}
+            d={h > 0 ? barPath(i * 10 + 1, H - h, 8, h, 2) : `M ${i * 10 + 1} ${H} h 8`}
+            fill="#d97706"
+            className="transition-[fill] hover:fill-[#fbbf24]"
+          >
+            <title>{`${r.day} — ${r.visitors} visitors · ${r.views} views`}</title>
+          </path>
+        );
+      })}
+      {rows[peakIdx].visitors > 0 && (
+        <text
+          x={Math.min(Math.max(peakIdx * 10 + 5, 8), W - 8)}
+          y={H - hOf(rows[peakIdx].visitors) - 3}
+          textAnchor="middle"
+          fontSize="7"
+          fill="#9aa7c7"
+        >
+          {rows[peakIdx].visitors}
+        </text>
+      )}
+      <text x="1" y={H + 10} fontSize="6.5" fill="#9aa7c7">
+        {mmdd(rows[0].day)}
+      </text>
+      <text x={W - 1} y={H + 10} fontSize="6.5" fill="#9aa7c7" textAnchor="end">
+        {mmdd(rows[rows.length - 1].day)}
+      </text>
+    </svg>
   );
 }
 
@@ -177,6 +243,26 @@ export default function AdminPage() {
           ))}
         </div>
       </div>
+
+      {/* site traffic (first-party beacon) */}
+      {m.traffic && (
+        <div className="board-card p-3">
+          <div className="mb-2 flex items-baseline justify-between">
+            <span className="flap text-xs text-board-amber">Site visitors — last 30 days</span>
+            <span className="text-[10px] text-board-dim">
+              today{" "}
+              <b className="text-white">{m.traffic[m.traffic.length - 1]?.visitors ?? 0}</b>{" "}
+              visitors · {m.traffic[m.traffic.length - 1]?.views ?? 0} views · 7d{" "}
+              <b className="text-white">
+                {m.traffic.slice(-7).reduce((a, r) => a + r.visitors, 0)}
+              </b>{" "}
+              · 30d{" "}
+              <b className="text-white">{m.traffic.reduce((a, r) => a + r.visitors, 0)}</b>
+            </span>
+          </div>
+          <TrafficChart rows={m.traffic} />
+        </div>
+      )}
 
       {/* the money row */}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

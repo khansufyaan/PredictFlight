@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Beacon } from "@/components/Beacon";
 import { ConnectButton } from "@/components/ConnectButton";
 import { Logo } from "@/components/Logo";
 import { MobileTabs, NavTabs } from "@/components/NavTabs";
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <MobileTabs />
           <Splash />
           <PlaneFly />
+          <Beacon />
           <footer className="mx-auto max-w-3xl px-4 pb-8 text-center text-[10px] text-board-dim">
             <Link href="/terms" className="underline hover:text-board-amber">
               Terms &amp; Conditions

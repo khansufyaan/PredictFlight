@@ -119,8 +119,25 @@ export async function computeMetrics() {
   const marketsWithBets = new Set(deposits.map((d) => d.marketId)).size;
   const repeatBettors = [...betsPerUser.values()].filter((n) => n >= 2).length;
 
+  // ---- site traffic (first-party beacon): daily views + unique visitors,
+  //      last 30 days, zero-filled so the chart has a bar per day
+  const since = new Date((now - 30 * DAY) * 1000).toISOString().slice(0, 10);
+  const trafficRows = (await db.$queryRawUnsafe(
+    `SELECT day, COUNT(*) AS views, COUNT(DISTINCT vh) AS visitors
+       FROM Visit WHERE day >= ? GROUP BY day ORDER BY day`,
+    since,
+  )) as { day: string; views: bigint | number; visitors: bigint | number }[];
+  const byDay = new Map(trafficRows.map((r) => [r.day, r]));
+  const traffic: { day: string; views: number; visitors: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const day = new Date((now - i * DAY) * 1000).toISOString().slice(0, 10);
+    const r = byDay.get(day);
+    traffic.push({ day, views: Number(r?.views ?? 0), visitors: Number(r?.visitors ?? 0) });
+  }
+
   return {
     generatedAt: now,
+    traffic,
     kpis: {
       // the number VCs ask about first: protocol revenue (the 2%)
       revenueUsd: usd(totalRevenue),

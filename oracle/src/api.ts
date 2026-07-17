@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import { computeMetrics, computeStatus } from "./admin.js";
@@ -51,6 +51,24 @@ export async function buildApi(): Promise<FastifyInstance> {
   app.get("/feeds", async (_req, reply) => {
     reply.header("cache-control", "public, s-maxage=300, stale-while-revalidate=3600");
     return currentFeeds();
+  });
+
+  // first-party pageview beacon. Anonymous by construction: the visitor hash
+  // is salted with the calendar day, so it cannot link a browser across days.
+  app.post("/track", async (req, reply) => {
+    reply.header("cache-control", "no-store");
+    const { path } = (req.body ?? {}) as { path?: string };
+    const p = typeof path === "string" && path.length <= 100 ? path.split("?")[0] : "/";
+    if (p.startsWith("/admin")) return { ok: true };
+    const fwd = req.headers["x-forwarded-for"];
+    const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || req.ip;
+    const ua = String(req.headers["user-agent"] ?? "");
+    const day = new Date().toISOString().slice(0, 10);
+    const vh = createHash("sha256").update(`${day}|${ip}|${ua}`).digest("hex").slice(0, 16);
+    await db.visit.create({
+      data: { day, path: p, vh, ts: Math.floor(Date.now() / 1000) },
+    });
+    return { ok: true };
   });
 
   app.get("/markets", async (req) => {
