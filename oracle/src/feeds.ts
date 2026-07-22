@@ -34,7 +34,7 @@ const CAMS: Record<string, ChannelCam> = {
   LAS: {
     channelId: "UCYDCnc3YBEqxfuhvQ4rxqSA", // LAS Vegas Airport LIVE (24/7)
     author: "LAS Vegas",
-    fallback: "tBz_zW5c-CY",
+    fallback: "iIUCaiiMmNs",
     label: "runways 26L & 26R · live ATC",
     credit: "LAS Vegas Airport LIVE",
   },

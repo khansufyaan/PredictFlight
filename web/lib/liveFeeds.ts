@@ -18,7 +18,7 @@ export const CAMS: Record<string, CamMeta> = {
   LAS: {
     label: "runways 26L & 26R · live ATC",
     credit: "LAS Vegas Airport LIVE",
-    fallback: "tBz_zW5c-CY",
+    fallback: "iIUCaiiMmNs",
   },
   MIA: {
     label: "runway 9/27 · tower radio",
