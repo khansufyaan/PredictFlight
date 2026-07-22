@@ -56,9 +56,13 @@ describe("settlement rulebook", () => {
 
 describe("feeds: parseLiveVideoId", async () => {
   const { parseLiveVideoId } = await import("../src/feeds.js");
-  it("extracts the id only when the page says it is live", () => {
-    expect(parseLiveVideoId('{"videoId":"tBz_zW5c-CY","isLive":true}')).toBe("tBz_zW5c-CY");
-    expect(parseLiveVideoId('{"videoId":"tBz_zW5c-CY"}')).toBeNull();
+  const page = (body: string) => `<html>junk"videoId":"WRONGWRONG1"more ytInitialPlayerResponse = ${body}</html>`;
+  it("reads the id from the player response only when live right now", () => {
+    expect(parseLiveVideoId(page('{"videoId":"tBz_zW5c-CY","isLiveNow":true}'))).toBe("tBz_zW5c-CY");
+  });
+  it("rejects pages that are not live (recommendation grids)", () => {
+    expect(parseLiveVideoId(page('{"videoId":"tBz_zW5c-CY","isLiveNow":false}'))).toBeNull();
+    expect(parseLiveVideoId('{"videoId":"tBz_zW5c-CY","isLiveNow":true}')).toBeNull(); // no player response marker
     expect(parseLiveVideoId("")).toBeNull();
   });
 });

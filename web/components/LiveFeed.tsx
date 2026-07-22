@@ -6,10 +6,12 @@ import { API_URL } from "@/lib/config";
 import { feedFor } from "@/lib/liveFeeds";
 
 /* Ambient live window onto an airport — not a video player. The stream is
- * driven through the YouTube IFrame API (we start it muted ourselves), a
- * click-shield swallows every interaction, and our own cover hides the frame
- * until video is actually rendering — so no YouTube chrome, spinner, title,
- * or link-out is ever visible. */
+ * driven through the YouTube IFrame API (we start it muted ourselves) and our
+ * own cover hides the frame until video is actually rendering. Clicks are
+ * allowed — pre-roll ads on these streams need their Skip button tappable —
+ * but the player un-pauses itself the instant anything pauses it, so it still
+ * can't be stopped, and with controls disabled there is nothing else to
+ * operate. */
 
 interface FeedInfo {
   airport: string;
@@ -90,7 +92,21 @@ export function LiveFeed({ airport }: { airport: string }) {
             e.target.mute();
             e.target.playVideo();
           },
-          onStateChange: (e: any) => setPlaying(e.data === 1),
+          onStateChange: (e: any) => {
+            setPlaying(e.data === 1);
+            // a live window has no pause: any PAUSED (2) or CUED (5) state —
+            // stray tap, ad ending, buffer hiccup — resumes on its own
+            if (e.data === 2 || e.data === 5 || e.data === 0) {
+              setTimeout(() => {
+                try {
+                  e.target.mute();
+                  e.target.playVideo();
+                } catch {
+                  /* player torn down */
+                }
+              }, 350);
+            }
+          },
           onError: () => setDead(true),
         },
       });
@@ -118,22 +134,22 @@ export function LiveFeed({ airport }: { airport: string }) {
   return (
     <div>
       <div className="relative aspect-video select-none overflow-hidden rounded-lg border border-board-line bg-black">
-        {/* player fills the box; the shield above it eats every click/touch */}
+        {/* player fills the box; clicks reach it so ad Skip buttons work —
+            auto-resume (above) makes pausing impossible anyway */}
         <div ref={hostRef} className="absolute inset-0 [&_iframe]:h-full [&_iframe]:w-full" />
-        <div className="absolute inset-0 z-20" aria-hidden />
         {/* our cover until real frames are rendering — YouTube's loading UI
             (spinner, title, More Videos) never gets seen */}
         <div
-          className={`absolute inset-0 z-10 flex items-center justify-center bg-black transition-opacity duration-700 ${
-            playing ? "pointer-events-none opacity-0" : "opacity-100"
+          className={`pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-black transition-opacity duration-700 ${
+            playing ? "opacity-0" : "opacity-100"
           }`}
         >
           <span className="animate-pulse text-xs uppercase tracking-widest text-board-dim">
             <span className="text-board-red">●</span> connecting to {airport} cam…
           </span>
         </div>
-        <div className="absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-black/80 to-transparent" />
-        <div className="absolute left-3 top-2.5 z-10 text-[11px] font-bold uppercase tracking-widest text-white/90">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-12 bg-gradient-to-b from-black/80 to-transparent" />
+        <div className="pointer-events-none absolute left-3 top-2.5 z-10 text-[11px] font-bold uppercase tracking-widest text-white/90">
           <span className="text-board-red">●</span> live · {airport}
         </div>
       </div>
